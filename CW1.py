@@ -197,3 +197,72 @@ print(data.isna().sum().sort_values(ascending=False))
 
 print(data.columns)
 
+@alt.theme.register('cyberpunk_dark', enable=True)
+def cyberpunk_theme():
+    return alt.theme.ThemeConfig({
+        'config': {
+            'background': '#2b2b2b',  # Your dark grey background
+            'view': {'stroke': 'transparent'},
+            'axis': {
+                'domainColor': '#FFFFFF', # White axes
+                'gridColor': '#444444',   # Subtle grid lines
+                'labelColor': '#FFFFFF',
+                'titleColor': '#FFFFFF',
+                'tickColor': '#FFFFFF'
+            },
+            'legend': {
+                'labelColor': '#FFFFFF',
+                'titleColor': '#FFFFFF'
+            },
+            'title': {
+                'color': '#FFFFFF',
+                'fontSize': 18
+            },
+            'mark': {
+                'tooltip': True
+            }
+        }
+    })
+
+gender_color_scale = alt.Scale(domain=['Male', 'Female'], range=['#347DC1', '#FFC0CB']) # Bright Blue & Pink
+
+year_slider = alt.binding_range(min=1980, max=2016, step=1, name='Year: ')
+select_year = alt.selection_point(name="Year", fields=['Year'], bind=year_slider, value=2014)
+
+region_options = [None] + sorted(data['Region'].dropna().unique().tolist())
+region_labels = ['All'] + sorted(data['Region'].dropna().unique().tolist())
+
+region_dropdown = alt.binding_select(
+    options=region_options, 
+    labels=region_labels, 
+    name='Region: '
+)
+
+select_region = alt.selection_point(
+    fields=['Region'], 
+    bind=region_dropdown, 
+    value=None 
+)
+
+scatter_bmi = alt.Chart(data).mark_circle().encode(
+    x='Urban_Population:Q',
+    y='BMI:Q',
+    color='Region:N',
+    size='GDP:Q'
+).transform_filter(
+    select_year 
+).transform_filter(
+    select_region 
+)
+
+line_bmi = alt.Chart(data).mark_line().encode(
+    x='Year:O',
+    y='mean(BMI):Q',
+    color='Gender:N'
+).transform_filter(
+    select_region # Do NOT add select_year here!
+)
+
+final_page = (scatter_bmi | line_bmi).add_params(select_year, select_region)
+
+final_page.save("index.html")

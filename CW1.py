@@ -230,17 +230,39 @@ gender_scale = alt.Scale(domain=['Men', 'Women'], range=['#347DC1', '#FFC0CB'])
 region_options = [None] + sorted(data['Region'].dropna().unique().tolist())
 region_labels = ['All'] + sorted(data['Region'].dropna().unique().tolist())
 
+# 1. Add an explicit name to the Region parameter!
 select_region = alt.selection_point(
+    name="RegionSelector", # 👈 This is the magic fix!
     fields=['Region'], 
     bind=alt.binding_select(options=region_options, labels=region_labels, name='Region: ')
 )
 
+# 2. Let's give Year a unique name too, just to be completely safe from field collisions
 select_year = alt.selection_point(
-    name="Year", 
+    name="YearSelector", 
     fields=['Year'], 
     bind=alt.binding_range(min=1980, max=2016, step=1, name='Year: '), 
     value=2014
 )
+
+# 3. The Gender Override
+# We include 'None' mapped to 'All' so users can still see the side-by-side comparisons
+gender_options = [None, 'Men', 'Women']
+gender_labels = ['All', 'Men', 'Women']
+
+select_gender = alt.selection_point(
+    name="GenderSelector",
+    fields=['Gender'],
+    bind=alt.binding_select(options=gender_options, labels=gender_labels, name='Gender: ')
+)
+
+select_metric = alt.selection_point(
+    name="MetricSelector",
+    fields=['Metric'],
+    bind=alt.binding_select(options=['All', 'BMI', 'BP', 'Diabetes'], name='Health Risk: '),
+    value='All'
+)
+metric_filter_expr = "(MetricSelector.Metric === 'All') || (datum.Metric === MetricSelector.Metric)"
 
 yearly_global = data.groupby('Year')[['BMI', 'BP', 'Diabetes']].mean().sort_values('Year').reset_index()
 yearly_global['Highest_Risk'] = yearly_global[['BMI', 'BP', 'Diabetes']].idxmax(axis=1)
@@ -263,25 +285,37 @@ def build_trend_text(row):
 yearly_global['Trend_Text'] = yearly_global.apply(build_trend_text, axis=1)
 data = data.merge(yearly_global[['Year', 'Trend_Text']], on='Year', how='left')
 
-
+# --- Header ---
 title_header = alt.Chart(pd.DataFrame({'t': ["Global Health & Wealth Insights 1980–2016"]})).mark_text(
     align='left', baseline='middle', fontSize=28, fontWeight='bold', color='#00D4FF', dx=-200
 ).encode(text='t:N').properties(width=800, height=50)
 
+# --- KPI 1: BMI (👑 THE HOST) ---
 kpi_bmi = alt.Chart(data).mark_text(fontSize=32, fontWeight='bold', color='#FF007F').encode(
     text=alt.Text('mean(BMI):Q', format='.1f')
-).transform_filter(select_region & select_year).properties(width=135, height=80, title="Avg Obesity %")
+).add_params(
+    select_region, select_year, select_gender, select_metric # ⚓ Host holds ALL signals (commas here!)
+).transform_filter(
+    select_region & select_year & select_gender # ⚡ Logic gate here! (No select_metric)
+).properties(width=135, height=80, title="Avg Obesity %")
 
+# --- KPI 2: BP (📡 GUEST) ---
 kpi_bp = alt.Chart(data).mark_text(fontSize=32, fontWeight='bold', color='#FF8C00').encode(
     text=alt.Text('mean(BP):Q', format='.1f')
-).transform_filter(select_region & select_year).properties(width=135, height=80, title="Avg High BP %")
+).transform_filter(
+    select_region & select_year & select_gender # ⚡ Logic gate
+).properties(width=135, height=80, title="Avg High BP %")
 
+# --- KPI 3: Diabetes (📡 GUEST) ---
 kpi_diabetes = alt.Chart(data).mark_text(fontSize=32, fontWeight='bold', color='#9400D3').encode(
     text=alt.Text('mean(Diabetes):Q', format='.1f')
-).transform_filter(select_region & select_year).properties(width=135, height=80, title="Avg Diabetes %")
+).transform_filter(
+    select_region & select_year & select_gender # ⚡ Logic gate
+).properties(width=135, height=80, title="Avg Diabetes %")
 
+# --- KPI 4: Highest Risk Country (📡 GUEST) ---
 kpi_risk_country = alt.Chart(data).transform_filter(
-    select_region & select_year 
+    select_region & select_year & select_gender # ⚡ Logic gate
 ).transform_aggregate(
     risk_score='mean(BMI)', groupby=['Country']
 ).transform_window(
@@ -292,30 +326,49 @@ kpi_risk_country = alt.Chart(data).transform_filter(
     text='Country:N'
 ).properties(width=135, height=80, title="Highest BMI Country")
 
+# --- KPI 5: Countries Count (📡 GUEST) ---
 kpi_countries = alt.Chart(data).mark_text(fontSize=32, fontWeight='bold', color='#00D4FF').encode(
     text=alt.Text('distinct(Country):Q') 
-).transform_filter(select_region & select_year).properties(width=135, height=80, title="Countries Included")
+).transform_filter(
+    select_region & select_year & select_gender # ⚡ Logic gate
+).properties(width=135, height=80, title="Countries Included")
 
+# --- KPI 6: Global Trend (📡 GUEST) ---
 kpi_trend = alt.Chart(data).mark_text(
     fontSize=14, fontWeight='bold', color='#32CD32', align='center', dy=5
 ).encode(
     text='Trend_Text:N'
-).transform_filter(select_year).transform_aggregate(
+).transform_filter(
+    select_year # This one usually only makes sense with the year filter
+).transform_aggregate(
     groupby=['Trend_Text'] 
 ).properties(width=180, height=80, title="Top Global Risk (YoY)")
 
+# --- Assemble the Row ---
 kpi_row = alt.hconcat(
     kpi_bmi, kpi_bp, kpi_diabetes, kpi_risk_country, kpi_countries, kpi_trend
 ).resolve_scale(color='independent')
 
+# --- 1. Define the Pass-Through Expressions ---
+# These act as "Bypass" switches for the 'All' / null options
+gender_filter_expr = "(GenderSelector.Gender === null) || (datum.Gender === GenderSelector.Gender)"
+region_filter_expr = "(RegionSelector.Region === null) || (datum.Region === RegionSelector.Region)"
+metric_filter_expr = "(MetricSelector.Metric === 'All') || (datum.Metric === MetricSelector.Metric)"
 
+# --- 2. The Multi-Line Chart ---
 multi_line = alt.Chart(data).transform_filter(
-    select_region
+    # Combine Region and Gender bypass logic
+    region_filter_expr + " && " + gender_filter_expr 
 ).transform_fold(
-    ['BMI', 'BP', 'Diabetes'],
+    ['BMI', 'BP', 'Diabetes'], 
     as_=['Metric', 'Prevalence']
+).transform_filter(
+    # Apply the Metric bypass logic AFTER folding
+    metric_filter_expr 
 ).mark_line(
-    point=True, strokeWidth=3, interpolate='monotone' 
+    point=True, 
+    strokeWidth=3, 
+    interpolate='monotone' 
 ).encode(
     x=alt.X('Year:Q', axis=alt.Axis(format='d', grid=False), title='Year'), 
     y=alt.Y('mean(Prevalence):Q', title='Avg Prevalence %', scale=alt.Scale(zero=False)),
@@ -328,8 +381,14 @@ multi_line = alt.Chart(data).transform_filter(
         alt.Tooltip('Metric:N', title='Metric'), 
         alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg %')
     ]
-).properties(width=400, height=350, title="Global Health Risks Over Time")
+).properties(
+    width=400, 
+    height=350, 
+    title="Global Health Risks Over Time"
+)
 
+# --- 3. The Vertical Tracker ---
+# This remains simple to avoid breaking the X-axis alignment
 tracker = alt.Chart(data).mark_rule(
     color='#00D4FF', 
     strokeWidth=2,
@@ -338,39 +397,31 @@ tracker = alt.Chart(data).mark_rule(
 ).encode(
     x='Year:Q'
 ).transform_filter(
-    select_year 
+    select_year # Positioned strictly by the Year slider
 )
 
+# --- 4. Combine ---
 interactive_multi_line = multi_line + tracker
 
 snapshot = alt.Chart(data).transform_filter(
-    select_region 
-).transform_filter(
-    select_year 
+    select_region & select_year & select_gender # Standard filters
 ).transform_fold(
     ['BMI', 'BP', 'Diabetes'],
     as_=['Metric', 'Prevalence']
+).transform_filter(
+    metric_filter_expr # ⚡ Use the 'All' logic expression here
 ).mark_bar(
-    cornerRadiusTopLeft=5,
-    cornerRadiusTopRight=5,
-    stroke='#00D4FF',
-    strokeWidth=0.5
+    cornerRadiusTopLeft=5, cornerRadiusTopRight=5, stroke='#00D4FF', strokeWidth=0.5
 ).encode(
-    x=alt.X('Metric:N', title='Health Metric', axis=alt.Axis(labelAngle=0, grid=False)), 
-    y=alt.Y('mean(Prevalence):Q', title='Global Average %', scale=alt.Scale(domain=[0, 30])), 
+    x=alt.X('Metric:N', title=None, axis=alt.Axis(labelAngle=0, grid=False)), 
+    y=alt.Y('mean(Prevalence):Q', title='Avg %', scale=alt.Scale(domain=[0, 30])), 
     color=alt.Color('Metric:N', scale=alt.Scale(
         domain=['BMI', 'BP', 'Diabetes'],
         range=['#FF007F', '#FF8C00', '#9400D3'] 
     ), legend=None), 
-    tooltip=[
-        alt.Tooltip('Metric:N', title='Metric'), 
-        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg %')
-    ]
-).properties(
-    width=400, 
-    height=350, 
-    title="Global Snapshot (Selected Year)"
-)
+    tooltip=['Metric:N', alt.Tooltip('mean(Prevalence):Q', format='.1f')]
+).properties(width=350, height=300, title="Snapshot (Selected Year)")
+
 
 snapshot_labels = snapshot.mark_text(
     align='center',
@@ -385,84 +436,51 @@ snapshot_labels = snapshot.mark_text(
 
 final_snapshot = (snapshot + snapshot_labels).resolve_scale(color='independent')
 
-top_10_countries = alt.Chart(data).transform_filter(
-    select_region
-).transform_filter(
-    select_year
-).transform_aggregate(
-    avg_bmi='mean(BMI)',
-    groupby=['Country']
-).transform_window(
-    rank='rank()',
-    sort=[alt.SortField('avg_bmi', order='descending')]
-).transform_filter(
-    alt.datum.rank <= 10 
-).mark_bar(
-    cornerRadiusTopRight=5,
-    cornerRadiusBottomRight=5,
-    color='#FF4500', 
-).encode(
-    x=alt.X('avg_bmi:Q', title='Average Obesity (%)', axis=alt.Axis(grid=True)),
-    y=alt.Y('Country:N', sort=alt.EncodingSortField(field='avg_bmi', order='descending'), title=None),
-    tooltip=[
-        alt.Tooltip('rank:O', title='Global Rank'),
-        alt.Tooltip('Country:N', title='Country'),
-        alt.Tooltip('avg_bmi:Q', format='.1f', title='Obesity %')
-    ]
-).properties(
-    width=450,
-    height=alt.Step(20), 
-    title="Top 10 Highest Risk Countries (Selected Year)"
-)
-top_10_labels = top_10_countries.mark_text(
-    align='left',
-    baseline='middle',
-    dx=5,
-    color='white',
-    fontWeight='bold',
-    fontSize=12
-).encode(
-    text=alt.Text('avg_bmi:Q', format='.1f')
-)
-
-final_top_10 = (top_10_countries + top_10_labels)
-
-gender_bars = alt.Chart(data).transform_filter(
-    select_region
-).transform_filter(
-    select_year
-).transform_filter(
-    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
+# --- The Dynamic Top 10 Ranker ---
+top_10_base = alt.Chart(data).transform_filter(
+    # Use the bypass expressions for Region and Gender
+    region_filter_expr + " && " + gender_filter_expr + " && " + "datum.Year == YearSelector.Year"
 ).transform_fold(
     ['BMI', 'BP', 'Diabetes'],
     as_=['Metric', 'Prevalence']
-).mark_bar(
-    cornerRadiusTopLeft=4,
-    cornerRadiusTopRight=4,
-    stroke='#2b2b2b', 
-    strokeWidth=1
-).encode(
-    x=alt.X('Metric:N', title='Health Metric', axis=alt.Axis(labelAngle=0, grid=False)),
-    
-    xOffset=alt.XOffset('Gender:N', sort=['Men', 'Women']), 
-    
-    y=alt.Y('mean(Prevalence):Q', title='Global Average %'),
-    
-    color=alt.Color('Gender:N', scale=gender_scale, legend=alt.Legend(
-        title=None, 
-        orient='top-right',
-        offset=-10 
-    )),
-    tooltip=[
-        alt.Tooltip('Gender:N', title='Demographic'),
-        alt.Tooltip('Metric:N', title='Health Risk'),
-        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg %')
-    ]
-).properties(
-    width=320, 
-    height=240, 
-    title="Gender Disparity (Selected Year)"
+).transform_filter(
+    metric_filter_expr # Listens to 'All', 'BMI', etc.
+).transform_aggregate(
+    val='mean(Prevalence)', groupby=['Country']
+).transform_window(
+    rank='rank()', sort=[alt.SortField('val', order='descending')]
+).transform_filter(
+    alt.datum.rank <= 10 
 )
+
+top_10_bars = top_10_base.mark_bar(color='#FF4500').encode(
+    x=alt.X('val:Q', title='Average Prevalence (%)'),
+    y=alt.Y('Country:N', sort='-x', title=None),
+    tooltip=['Country:N', alt.Tooltip('val:Q', format='.1f', title='Avg %')]
+)
+
+top_10_text = top_10_bars.mark_text(
+    align='left', dx=5, color='white', fontWeight='bold'
+).encode(text=alt.Text('val:Q', format='.1f'))
+
+# ⚡ THIS IS THE ONLY ASSIGNMENT YOU NEED. 
+# Do NOT follow this with "final_top_10 = top_10_countries + ..."
+final_top_10 = (top_10_bars + top_10_text).properties(width=400, height=300, title="Top 10 Risk Countries")
+
+gender_bars = alt.Chart(data).transform_filter(
+    select_region & select_year & select_gender
+).transform_fold(
+    ['BMI', 'BP', 'Diabetes'],
+    as_=['Metric', 'Prevalence']
+).transform_filter(
+    metric_filter_expr
+).mark_bar().encode(
+    x=alt.X('Metric:N', title=None),
+    xOffset='Gender:N',
+    y=alt.Y('mean(Prevalence):Q', title='Avg %'),
+    color=alt.Color('Gender:N', scale=gender_scale),
+    tooltip=['Gender:N', 'Metric:N', alt.Tooltip('mean(Prevalence):Q', format='.1f')]
+).properties(width=300, height=250, title="Gender Disparity")
 
 gender_labels = gender_bars.mark_text(
     align='center',
@@ -487,57 +505,41 @@ bottom_floor = alt.hconcat(
     final_gender_chart
 ).resolve_scale(color='independent')
 
-# ==========================================
-# 🏗️ PAGE 1: OVERVIEW (Your Current Masterpiece)
-# ==========================================
 page_overview = alt.vconcat(
     title_header, kpi_row, middle_row, bottom_floor
-).add_params(select_region, select_year).configure_view(stroke=None).configure_concat(spacing=40)
+).configure_view(stroke=None).configure_concat(spacing=40)
 
 overview_json = page_overview.to_json()
 
-## ==========================================
-# 🏗️ PAGE 2: SOCIOECONOMIC (The Wealth & Urbanization Suite)
-# ==========================================
+# --- 1. The Title ---
+socio_title = alt.Chart(pd.DataFrame({'t': ["Socioeconomic Risk Analysis"]})).mark_text(
+    align='left', fontSize=28, fontWeight='bold', color='#00D4FF'
+).encode(text='t:N').properties(width=800, height=50)
 
-# 1. The Scatter Plot (Chained filters, no '&' symbol!)
-scatter_socio = alt.Chart(data).mark_circle(
-    opacity=0.7,
-    stroke='#2b2b2b', 
-    strokeWidth=1
+# --- 2. The GDP KPI Card (NO add_params here!) ---
+kpi_gdp = alt.Chart(data).mark_text(
+    fontSize=40, 
+    fontWeight='bold', 
+    color='#00FF9F', 
+    align='center'
 ).encode(
-    x=alt.X('Urban_Population:Q', title='Urban Population (%)', scale=alt.Scale(zero=False)),
-    y=alt.Y('BMI:Q', title='Average Obesity (%)', scale=alt.Scale(zero=False)),
-    color=alt.Color('Region:N', legend=alt.Legend(title="Region", orient='right')),
-    size=alt.Size('GDP:Q', title="GDP per Capita ($)", scale=alt.Scale(range=[20, 1500])),
-    tooltip=[
-        alt.Tooltip('Country:N', title='Country'),
-        alt.Tooltip('Region:N', title='Region'),
-        alt.Tooltip('Urban_Population:Q', format='.1f', title='Urban Pop (%)'),
-        alt.Tooltip('GDP:Q', format=',.0f', title='GDP per Capita ($)'),
-        alt.Tooltip('BMI:Q', format='.1f', title='Obesity (%)')
-    ]
+    text=alt.Text('mean(GDP_per_capita):Q', format='$,.0f')
 ).transform_filter(
-    select_region # 👈 Filter 1
-).transform_filter(
-    select_year   # 👈 Filter 2 (Chained, not combined!)
-).properties(
-    width=750,  
-    height=450, 
-    title="Urbanization & Wealth vs. Obesity Risk (Selected Year)"
+    select_region, select_year, select_gender, select_metric).properties(
+    width=250, 
+    height=100, 
+    title=alt.TitleParams(
+        text="Avg GDP per Capita", subtitle="Economic Baseline", color='#FFFFFF', fontSize=14
+    )
 )
 
-# 2. The Income Distribution Boxplot
+# --- 3. The Boxplot (NO add_params here!) ---
 boxplot_socio = alt.Chart(data).transform_filter(
-    select_region # 👈 Filter 1
+    select_region, select_year, select_gender, select_metric 
 ).transform_filter(
-    select_year   # 👈 Filter 2
-).transform_filter(
-    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']) # 👈 Filter 3
+    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']) 
 ).mark_boxplot(
-    size=30, 
-    extent='min-max', 
-    outliers=alt.MarkConfig(size=15, opacity=0.6, color='#00D4FF') 
+    size=30, extent='min-max', outliers=alt.MarkConfig(size=15, opacity=0.6, color='#00D4FF') 
 ).encode(
     x=alt.X('IncomeGroup:N', 
             title='World Bank Income Group', 
@@ -545,43 +547,107 @@ boxplot_socio = alt.Chart(data).transform_filter(
             sort=['High income', 'Upper middle income', 'Lower middle income', 'Low income', 'Not Classified']
     ),
     y=alt.Y('BMI:Q', title='Obesity Prevalence (%)', scale=alt.Scale(zero=False)),
-    color=alt.Color('Gender:N', scale=gender_scale, legend=alt.Legend(
-        title=None, 
-        orient='top-right'
-    )),
+    color=alt.Color('Gender:N', scale=gender_scale, legend=alt.Legend(title=None, orient='top-right')),
     xOffset=alt.XOffset('Gender:N', sort=['Men', 'Women']), 
-    tooltip=[
-        alt.Tooltip('IncomeGroup:N', title='Income Bracket'),
-        alt.Tooltip('Gender:N', title='Demographic'),
-        alt.Tooltip('Country:N', title='Country (if outlier)'),
-        alt.Tooltip('BMI:Q', format='.1f', title='Obesity %')
-    ]
+    tooltip=['IncomeGroup:N', 'Gender:N', 'Country:N', alt.Tooltip('BMI:Q', format='.1f')]
 ).properties(
-    width=750,  
-    height=350,
-    title="Obesity Distribution by Income Group & Gender (Selected Year)"
+    width=750, height=350, title="Obesity Distribution by Income Group & Gender"
 )
 
-# 3. Assemble Page 2
+# --- 4. The Final Assembly (THE ONLY PLACE add_params SHOULD LIVE) ---
 page_socio = alt.vconcat(
-    scatter_socio,
+    socio_title,
+    kpi_gdp,
     boxplot_socio
 ).add_params(
-    select_region, # 👈 They are back where they belong!
-    select_year
-).configure_view(
-    stroke=None
-).configure_concat(
-    spacing=40 
+    select_region, select_year, select_gender, select_metric
+).configure_view(stroke=None).configure_concat(spacing=40)
+
+socio_json = page_socio.to_json()
+# --- 1. The Title ---
+socio_title = alt.Chart(pd.DataFrame({'t': ["Socioeconomic Risk Analysis"]})).mark_text(
+    align='left', fontSize=28, fontWeight='bold', color='#00D4FF'
+).encode(text='t:N').properties(width=800, height=50)
+
+# --- 2. The GDP KPI Card (👑 THE HOST) ---
+kpi_gdp = alt.Chart(data).mark_text(
+    fontSize=40, 
+    fontWeight='bold', 
+    color='#00FF9F', 
+    align='center'
+).encode(
+    text=alt.Text('mean(GDP_per_capita):Q', format='$,.0f')
+).add_params(
+    select_region, select_year, select_gender, select_metric).transform_filter(
+    select_region, select_year, select_gender, select_metric).properties(
+    width=250, 
+    height=100, 
+    title=alt.TitleParams(
+        text="Avg GDP per Capita", color='#FFFFFF', fontSize=14
+    )
 )
 
-socio_json = page_socio.to_json()
+# --- 1. The Title ---
+socio_title = alt.Chart(pd.DataFrame({'t': ["Socioeconomic Risk Analysis"]})).mark_text(
+    align='left', fontSize=28, fontWeight='bold', color='#00D4FF'
+).encode(text='t:N').properties(width=800, height=50)
+
+# --- 2. The GDP KPI Card (👑 THE HOST) ---
+kpi_gdp = alt.Chart(data).mark_text(
+    fontSize=40, fontWeight='bold', color='#00FF9F', align='center'
+).encode(
+    text=alt.Text('mean(GDP_per_capita):Q', format='$,.0f')
+).add_params(
+    select_region, select_year, select_gender, select_metric # ⚓ Anchor all signals
+).transform_filter(
+    select_region & select_year & select_gender # Standard demographic filters
+).properties(width=250, height=100, title="Avg GDP per Capita")
+
+# --- 3. The Urbanisation KPI Card (📡 A GUEST) ---
+kpi_urban = alt.Chart(data).mark_text(
+    fontSize=40, 
+    fontWeight='bold', 
+    color='#B026FF', # Electric Purple for the megacities
+    align='center'
+).encode(
+    text=alt.Text('mean(Urbanization):Q', format='.1f') 
+).transform_filter(
+    select_region, select_year, select_gender, select_metric # Just listening to the host's signals
+).properties(
+    width=250, 
+    height=100, 
+    title=alt.TitleParams(
+        text="Avg Urbanisation %", color='#FFFFFF', fontSize=14
+    )
+)
+
+boxplot_socio = alt.Chart(data).transform_filter(
+    select_region & select_year & select_gender
+).transform_filter(
+    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']) 
+).transform_fold(
+    ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'] # ⚡ Fold to allow metric switching
+).transform_filter(
+    metric_filter_expr # ⚡ Use the 'All' logic
+).mark_boxplot(
+    size=30, extent='min-max', outliers=alt.MarkConfig(size=15, opacity=0.6, color='#00D4FF') 
+).encode(
+    x=alt.X('IncomeGroup:N', title='Income Group', sort=['High income', 'Upper middle income', 'Lower middle income', 'Low income']),
+    y=alt.Y('Prevalence:Q', title='Prevalence (%)', scale=alt.Scale(zero=False)), # 👈 Uses Prevalence now
+    color=alt.Color('Gender:N', scale=gender_scale),
+    xOffset=alt.XOffset('Gender:N'), 
+    tooltip=['IncomeGroup:N', 'Gender:N', 'Country:N', alt.Tooltip('Prevalence:Q', format='.1f')]
+).properties(width=750, height=350, title="Health Distribution by Income & Gender")
+
+# --- 3. Final Page 2 Concatenation ---
+page_socio = alt.vconcat(
+    socio_title,
+    alt.hconcat(kpi_gdp, kpi_urban).resolve_scale(color='independent'),
+    boxplot_socio
+).configure_view(stroke=None).configure_concat(spacing=40)
 
 socio_json = page_socio.to_json()
 
-# ==========================================
-# 🏗️ PAGE 3: REGIONAL RISK (Placeholder)
-# ==========================================
 placeholder_text_3 = alt.Chart(pd.DataFrame({'t': ["Regional Risk Matrix Offline."]})).mark_text(
     fontSize=30, color='#9400D3'
 ).encode(text='t:N').properties(width=800, height=400)

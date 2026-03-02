@@ -509,7 +509,7 @@ socio_title = alt.Chart(pd.DataFrame({'t': ["Socioeconomic Risk Analysis"]})).ma
 kpi_gdp = alt.Chart(data).mark_text(
     fontSize=40, fontWeight='bold', color='#00FF9F', align='center'
 ).encode(
-    text=alt.Text('mean(GDP_per_capita):Q', format='$,.0f')
+    text=alt.Text('mean(GDP):Q', format='$,.0f')
 ).add_params(
     select_region, select_year # ⚓ Anchor all signals
 ).transform_filter(
@@ -523,7 +523,7 @@ kpi_urban = alt.Chart(data).mark_text(
     color='#B026FF', # Electric Purple for the megacities
     align='center'
 ).encode(
-    text=alt.Text('mean(Urbanization):Q', format='.1f') 
+    text=alt.Text('mean(Urban_Population):Q', format='.1f') 
 ).transform_filter(
     select_region & select_year  # Just listening to the host's signals
 ).properties(
@@ -550,11 +550,46 @@ boxplot_socio = alt.Chart(data).transform_filter(
     tooltip=['IncomeGroup:N', 'Gender:N', 'Country:N', alt.Tooltip('Prevalence:Q', format='.1f')]
 ).properties(width=750, height=350, title="Health Distribution by Income & Gender")
 
+# 1. Prep the data (Pandas does the heavy lifting)
+corr_cols = ['BMI', 'BP', 'Diabetes', 'GDP', 'Urban_Population']
+corr_matrix = data[corr_cols].corr().reset_index().melt(id_vars='index')
+corr_matrix.columns = ['Var1', 'Var2', 'Correlation']
+
+# 2. Build the Heatmap
+heatmap = alt.Chart(corr_matrix).mark_rect().encode(
+    x=alt.X('Var1:N', title=None),
+    y=alt.Y('Var2:N', title=None),
+    color=alt.Color('Correlation:Q', 
+                    scale=alt.Scale(scheme='viridis', domain=[-1, 1]),
+                    legend=alt.Legend(title="Pearson Corr")),
+    tooltip=[
+        alt.Tooltip('Var1:N'),
+        alt.Tooltip('Var2:N'),
+        alt.Tooltip('Correlation:Q', format='.2f')
+    ]
+).properties(
+    width=350, 
+    height=350, 
+    title="Socioeconomic & Health Correlations"
+)
+
+# 3. Add text labels (The "Pro" touch)
+text = heatmap.mark_text(baseline='middle').encode(
+    text=alt.Text('Correlation:Q', format='.2f'),
+    color=alt.condition(
+        alt.datum.Correlation > 0.5, 
+        alt.value('black'), 
+        alt.value('white')
+    )
+)
+
+final_heatmap = (heatmap + text)
+
 # --- 3. Final Page 2 Concatenation ---
 page_socio = alt.vconcat(
     socio_title,
     alt.hconcat(kpi_gdp, kpi_urban).resolve_scale(color='independent'),
-    boxplot_socio
+    boxplot_socio, final_heatmap
 ).configure_view(stroke=None).configure_concat(spacing=40)
 
 socio_json = page_socio.to_json()

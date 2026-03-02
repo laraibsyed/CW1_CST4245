@@ -199,15 +199,16 @@ print(data.isna().sum().sort_values(ascending=False))
 
 print(data.columns)
 
+
 @alt.theme.register('cyberpunk_dark', enable=True)
 def cyberpunk_theme():
     return alt.theme.ThemeConfig({
         'config': {
-            'background': '#2b2b2b',  # Your dark grey background
+            'background': '#2b2b2b',  
             'view': {'stroke': 'transparent'},
             'axis': {
-                'domainColor': '#FFFFFF', # White axes
-                'gridColor': '#444444',   # Subtle grid lines
+                'domainColor': '#FFFFFF', 
+                'gridColor': '#444444',   
                 'labelColor': '#FFFFFF',
                 'titleColor': '#FFFFFF',
                 'tickColor': '#FFFFFF'
@@ -220,101 +221,376 @@ def cyberpunk_theme():
                 'color': '#FFFFFF',
                 'fontSize': 18
             },
-            'mark': {
-                'tooltip': True
-            }
+            'mark': {'tooltip': True}
         }
     })
 
-gender_scale = alt.Scale(domain=['Male', 'Female'], range=['#347DC1', '#FFC0CB']) # Bright Blue & Pink
-
-year_slider = alt.binding_range(min=1980, max=2016, step=1, name='Year: ')
-select_year = alt.selection_point(name="Year", fields=['Year'], bind=year_slider, value=2014)
-
+gender_scale = alt.Scale(domain=['Men', 'Women'], range=['#347DC1', '#FFC0CB']) 
 
 region_options = [None] + sorted(data['Region'].dropna().unique().tolist())
 region_labels = ['All'] + sorted(data['Region'].dropna().unique().tolist())
 
 select_region = alt.selection_point(
     fields=['Region'], 
-    bind=alt.binding_select(options=region_options, labels=region_labels, name='Region: '),
-    value=None
+    bind=alt.binding_select(options=region_options, labels=region_labels, name='Region: ')
 )
 
 select_year = alt.selection_point(
+    name="Year", 
     fields=['Year'], 
-    bind=alt.binding_range(min=1980, max=2016, step=1, name='Year: '),
-    value=2010
+    bind=alt.binding_range(min=1980, max=2016, step=1, name='Year: '), 
+    value=2014
 )
+
+yearly_global = data.groupby('Year')[['BMI', 'BP', 'Diabetes']].mean().sort_values('Year').reset_index()
+yearly_global['Highest_Risk'] = yearly_global[['BMI', 'BP', 'Diabetes']].idxmax(axis=1)
+
+prev_year = yearly_global.set_index('Year')[['BMI', 'BP', 'Diabetes']].shift(1).reset_index()
+yearly_global = yearly_global.merge(prev_year, on='Year', suffixes=('', '_prev'))
+
+def build_trend_text(row):
+    risk = row['Highest_Risk']
+    curr_val = row[risk]
+    prev_val = row[f"{risk}_prev"]
+    
+    if pd.isna(prev_val): 
+        return f"📈 {risk} (Base Year: {curr_val:.1f}%)"
+    
+    diff = curr_val - prev_val
+    sign = "+" if diff > 0 else ""
+    return f"📈 {risk} ({sign}{diff:.1f}% vs prev yr)"
+
+yearly_global['Trend_Text'] = yearly_global.apply(build_trend_text, axis=1)
+data = data.merge(yearly_global[['Year', 'Trend_Text']], on='Year', how='left')
+
 
 title_header = alt.Chart(pd.DataFrame({'t': ["Global Health & Wealth Insights 1980–2016"]})).mark_text(
     align='left', baseline='middle', fontSize=28, fontWeight='bold', color='#00D4FF', dx=-200
 ).encode(text='t:N').properties(width=800, height=50)
 
-kpi_obesity = alt.Chart(data).mark_text(fontSize=40, fontWeight='bold', color='#FF007F').encode(
+kpi_bmi = alt.Chart(data).mark_text(fontSize=32, fontWeight='bold', color='#FF007F').encode(
     text=alt.Text('mean(BMI):Q', format='.1f')
+).transform_filter(select_region & select_year).properties(width=135, height=80, title="Avg Obesity %")
+
+kpi_bp = alt.Chart(data).mark_text(fontSize=32, fontWeight='bold', color='#FF8C00').encode(
+    text=alt.Text('mean(BP):Q', format='.1f')
+).transform_filter(select_region & select_year).properties(width=135, height=80, title="Avg High BP %")
+
+kpi_diabetes = alt.Chart(data).mark_text(fontSize=32, fontWeight='bold', color='#9400D3').encode(
+    text=alt.Text('mean(Diabetes):Q', format='.1f')
+).transform_filter(select_region & select_year).properties(width=135, height=80, title="Avg Diabetes %")
+
+kpi_risk_country = alt.Chart(data).transform_filter(
+    select_region & select_year 
+).transform_aggregate(
+    risk_score='mean(BMI)', groupby=['Country']
+).transform_window(
+    rank='rank()', sort=[alt.SortField('risk_score', order='descending')]
 ).transform_filter(
-    select_region & select_year
-).properties(width=200, height=100, title="Avg. Obesity %")
+    'datum.rank == 1'
+).mark_text(fontSize=14, fontWeight='bold', color='#FF4500', align='center', dy=5).encode(
+    text='Country:N'
+).properties(width=135, height=80, title="Highest BMI Country")
 
-kpi_gdp = alt.Chart(data).mark_text(fontSize=40, fontWeight='bold', color='#00D4FF').encode(
-    text=alt.Text('mean(GDP):Q', format='$,.0f')
+kpi_countries = alt.Chart(data).mark_text(fontSize=32, fontWeight='bold', color='#00D4FF').encode(
+    text=alt.Text('distinct(Country):Q') 
+).transform_filter(select_region & select_year).properties(width=135, height=80, title="Countries Included")
+
+kpi_trend = alt.Chart(data).mark_text(
+    fontSize=14, fontWeight='bold', color='#32CD32', align='center', dy=5
+).encode(
+    text='Trend_Text:N'
+).transform_filter(select_year).transform_aggregate(
+    groupby=['Trend_Text'] 
+).properties(width=180, height=80, title="Top Global Risk (YoY)")
+
+kpi_row = alt.hconcat(
+    kpi_bmi, kpi_bp, kpi_diabetes, kpi_risk_country, kpi_countries, kpi_trend
+).resolve_scale(color='independent')
+
+
+multi_line = alt.Chart(data).transform_filter(
+    select_region
+).transform_fold(
+    ['BMI', 'BP', 'Diabetes'],
+    as_=['Metric', 'Prevalence']
+).mark_line(
+    point=True, strokeWidth=3, interpolate='monotone' 
+).encode(
+    x=alt.X('Year:Q', axis=alt.Axis(format='d', grid=False), title='Year'), 
+    y=alt.Y('mean(Prevalence):Q', title='Avg Prevalence %', scale=alt.Scale(zero=False)),
+    color=alt.Color('Metric:N', scale=alt.Scale(
+        domain=['BMI', 'BP', 'Diabetes'],
+        range=['#FF007F', '#FF8C00', '#9400D3'] 
+    ), legend=alt.Legend(title="Health Metric", orient='top-left')),
+    tooltip=[
+        alt.Tooltip('Year:Q', title='Year'), 
+        alt.Tooltip('Metric:N', title='Metric'), 
+        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg %')
+    ]
+).properties(width=400, height=350, title="Global Health Risks Over Time")
+
+tracker = alt.Chart(data).mark_rule(
+    color='#00D4FF', 
+    strokeWidth=2,
+    strokeDash=[5, 5], 
+    opacity=0.8
+).encode(
+    x='Year:Q'
 ).transform_filter(
-    select_region & select_year
-).properties(width=200, height=100, title="Avg. GDP per Capita")
-
-kpi_urban = alt.Chart(data).mark_text(fontSize=40, fontWeight='bold', color='#32CD32').encode(
-    text=alt.Text('mean(Urban_Population):Q', format='.1f')
-).transform_filter(
-    select_region & select_year
-).properties(width=200, height=100, title="Avg. Urbanization %")
-
-kpi_row = alt.hconcat(kpi_obesity, kpi_gdp, kpi_urban)
-
-header_section = alt.vconcat(title_header, kpi_row).configure_view(stroke=None)
-
-scatter = alt.Chart(data).mark_circle().encode(
-    x=alt.X('Urban_Population:Q', title='Urban Population (%)'),
-    y=alt.Y('BMI:Q', title='BMI Prevalence'),
-    color=alt.Color('Region:N', legend=alt.Legend(title="Region")),
-    size=alt.Size('GDP:Q', legend=alt.Legend(title="GDP per Capita")),
-    tooltip=['Country', 'BMI', 'Urban_Population']
-).transform_filter(
-    select_region & select_year
-).properties(width=400, height=350, title="Urbanization vs Obesity")
-
-
-line = alt.Chart(data).mark_line().encode(
-    x='Year:O',
-    y='mean(BMI):Q',
-    color=alt.Color('Gender:N', scale=gender_scale, legend=alt.Legend(title="Gender")), 
-).transform_filter(
-    select_region # Only filter by region here, DO NOT add select_year!
-).properties(width=400, height=350, title="BMI Trend Over Time")
-
-# 1. Combine your KPI text marks horizontally
-kpi_row = alt.hconcat(kpi_obesity, kpi_gdp, kpi_urban).resolve_scale(color='independent')
-
-# 2. Combine your scatter and line charts horizontally
-bottom_row = alt.hconcat(scatter, line).resolve_scale(color='independent', size='independent')
-
-# 3. Stack the header, KPIs, and charts vertically into ONE master chart
-master_page = alt.vconcat(
-    title_header,
-    kpi_row,
-    bottom_row
-).add_params(
-    select_region, select_year # Add the filters to the master container!
-).configure_view(
-    stroke=None 
-).configure_concat(
-    spacing=30 # Adds nice breathing room between your charts
+    select_year 
 )
 
-# 4. Export the single master JSON
-master_json = master_page.to_json()
+interactive_multi_line = multi_line + tracker
 
-# Using double {{ }} for CSS/JS so the f-string only populates {master_json}
+snapshot = alt.Chart(data).transform_filter(
+    select_region 
+).transform_filter(
+    select_year 
+).transform_fold(
+    ['BMI', 'BP', 'Diabetes'],
+    as_=['Metric', 'Prevalence']
+).mark_bar(
+    cornerRadiusTopLeft=5,
+    cornerRadiusTopRight=5,
+    stroke='#00D4FF',
+    strokeWidth=0.5
+).encode(
+    x=alt.X('Metric:N', title='Health Metric', axis=alt.Axis(labelAngle=0, grid=False)), 
+    y=alt.Y('mean(Prevalence):Q', title='Global Average %', scale=alt.Scale(domain=[0, 30])), 
+    color=alt.Color('Metric:N', scale=alt.Scale(
+        domain=['BMI', 'BP', 'Diabetes'],
+        range=['#FF007F', '#FF8C00', '#9400D3'] 
+    ), legend=None), 
+    tooltip=[
+        alt.Tooltip('Metric:N', title='Metric'), 
+        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg %')
+    ]
+).properties(
+    width=400, 
+    height=350, 
+    title="Global Snapshot (Selected Year)"
+)
+
+snapshot_labels = snapshot.mark_text(
+    align='center',
+    baseline='bottom',
+    dy=-5, 
+    color='white',
+    fontWeight='bold',
+    fontSize=14
+).encode(
+    text=alt.Text('mean(Prevalence):Q', format='.1f')
+)
+
+final_snapshot = (snapshot + snapshot_labels).resolve_scale(color='independent')
+
+top_10_countries = alt.Chart(data).transform_filter(
+    select_region
+).transform_filter(
+    select_year
+).transform_aggregate(
+    avg_bmi='mean(BMI)',
+    groupby=['Country']
+).transform_window(
+    rank='rank()',
+    sort=[alt.SortField('avg_bmi', order='descending')]
+).transform_filter(
+    alt.datum.rank <= 10 
+).mark_bar(
+    cornerRadiusTopRight=5,
+    cornerRadiusBottomRight=5,
+    color='#FF4500', 
+).encode(
+    x=alt.X('avg_bmi:Q', title='Average Obesity (%)', axis=alt.Axis(grid=True)),
+    y=alt.Y('Country:N', sort=alt.EncodingSortField(field='avg_bmi', order='descending'), title=None),
+    tooltip=[
+        alt.Tooltip('rank:O', title='Global Rank'),
+        alt.Tooltip('Country:N', title='Country'),
+        alt.Tooltip('avg_bmi:Q', format='.1f', title='Obesity %')
+    ]
+).properties(
+    width=450,
+    height=alt.Step(20), 
+    title="Top 10 Highest Risk Countries (Selected Year)"
+)
+top_10_labels = top_10_countries.mark_text(
+    align='left',
+    baseline='middle',
+    dx=5,
+    color='white',
+    fontWeight='bold',
+    fontSize=12
+).encode(
+    text=alt.Text('avg_bmi:Q', format='.1f')
+)
+
+final_top_10 = (top_10_countries + top_10_labels)
+
+gender_bars = alt.Chart(data).transform_filter(
+    select_region
+).transform_filter(
+    select_year
+).transform_filter(
+    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
+).transform_fold(
+    ['BMI', 'BP', 'Diabetes'],
+    as_=['Metric', 'Prevalence']
+).mark_bar(
+    cornerRadiusTopLeft=4,
+    cornerRadiusTopRight=4,
+    stroke='#2b2b2b', 
+    strokeWidth=1
+).encode(
+    x=alt.X('Metric:N', title='Health Metric', axis=alt.Axis(labelAngle=0, grid=False)),
+    
+    xOffset=alt.XOffset('Gender:N', sort=['Men', 'Women']), 
+    
+    y=alt.Y('mean(Prevalence):Q', title='Global Average %'),
+    
+    color=alt.Color('Gender:N', scale=gender_scale, legend=alt.Legend(
+        title=None, 
+        orient='top-right',
+        offset=-10 
+    )),
+    tooltip=[
+        alt.Tooltip('Gender:N', title='Demographic'),
+        alt.Tooltip('Metric:N', title='Health Risk'),
+        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg %')
+    ]
+).properties(
+    width=320, 
+    height=240, 
+    title="Gender Disparity (Selected Year)"
+)
+
+gender_labels = gender_bars.mark_text(
+    align='center',
+    baseline='bottom',
+    dy=-3,
+    color='white',
+    fontSize=11,
+    fontWeight='bold'
+).encode(
+    text=alt.Text('mean(Prevalence):Q', format='.1f')
+)
+
+final_gender_chart = (gender_bars + gender_labels)
+
+middle_row = alt.hconcat(
+    final_snapshot,         
+    interactive_multi_line  
+).resolve_scale(color='independent')
+
+bottom_floor = alt.hconcat(
+    final_top_10,
+    final_gender_chart
+).resolve_scale(color='independent')
+
+# ==========================================
+# 🏗️ PAGE 1: OVERVIEW (Your Current Masterpiece)
+# ==========================================
+page_overview = alt.vconcat(
+    title_header, kpi_row, middle_row, bottom_floor
+).add_params(select_region, select_year).configure_view(stroke=None).configure_concat(spacing=40)
+
+overview_json = page_overview.to_json()
+
+## ==========================================
+# 🏗️ PAGE 2: SOCIOECONOMIC (The Wealth & Urbanization Suite)
+# ==========================================
+
+# 1. The Scatter Plot (Chained filters, no '&' symbol!)
+scatter_socio = alt.Chart(data).mark_circle(
+    opacity=0.7,
+    stroke='#2b2b2b', 
+    strokeWidth=1
+).encode(
+    x=alt.X('Urban_Population:Q', title='Urban Population (%)', scale=alt.Scale(zero=False)),
+    y=alt.Y('BMI:Q', title='Average Obesity (%)', scale=alt.Scale(zero=False)),
+    color=alt.Color('Region:N', legend=alt.Legend(title="Region", orient='right')),
+    size=alt.Size('GDP:Q', title="GDP per Capita ($)", scale=alt.Scale(range=[20, 1500])),
+    tooltip=[
+        alt.Tooltip('Country:N', title='Country'),
+        alt.Tooltip('Region:N', title='Region'),
+        alt.Tooltip('Urban_Population:Q', format='.1f', title='Urban Pop (%)'),
+        alt.Tooltip('GDP:Q', format=',.0f', title='GDP per Capita ($)'),
+        alt.Tooltip('BMI:Q', format='.1f', title='Obesity (%)')
+    ]
+).transform_filter(
+    select_region # 👈 Filter 1
+).transform_filter(
+    select_year   # 👈 Filter 2 (Chained, not combined!)
+).properties(
+    width=750,  
+    height=450, 
+    title="Urbanization & Wealth vs. Obesity Risk (Selected Year)"
+)
+
+# 2. The Income Distribution Boxplot
+boxplot_socio = alt.Chart(data).transform_filter(
+    select_region # 👈 Filter 1
+).transform_filter(
+    select_year   # 👈 Filter 2
+).transform_filter(
+    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']) # 👈 Filter 3
+).mark_boxplot(
+    size=30, 
+    extent='min-max', 
+    outliers=alt.MarkConfig(size=15, opacity=0.6, color='#00D4FF') 
+).encode(
+    x=alt.X('IncomeGroup:N', 
+            title='World Bank Income Group', 
+            axis=alt.Axis(labelAngle=-45, grid=False),
+            sort=['High income', 'Upper middle income', 'Lower middle income', 'Low income', 'Not Classified']
+    ),
+    y=alt.Y('BMI:Q', title='Obesity Prevalence (%)', scale=alt.Scale(zero=False)),
+    color=alt.Color('Gender:N', scale=gender_scale, legend=alt.Legend(
+        title=None, 
+        orient='top-right'
+    )),
+    xOffset=alt.XOffset('Gender:N', sort=['Men', 'Women']), 
+    tooltip=[
+        alt.Tooltip('IncomeGroup:N', title='Income Bracket'),
+        alt.Tooltip('Gender:N', title='Demographic'),
+        alt.Tooltip('Country:N', title='Country (if outlier)'),
+        alt.Tooltip('BMI:Q', format='.1f', title='Obesity %')
+    ]
+).properties(
+    width=750,  
+    height=350,
+    title="Obesity Distribution by Income Group & Gender (Selected Year)"
+)
+
+# 3. Assemble Page 2
+page_socio = alt.vconcat(
+    scatter_socio,
+    boxplot_socio
+).add_params(
+    select_region, # 👈 They are back where they belong!
+    select_year
+).configure_view(
+    stroke=None
+).configure_concat(
+    spacing=40 
+)
+
+socio_json = page_socio.to_json()
+
+socio_json = page_socio.to_json()
+
+# ==========================================
+# 🏗️ PAGE 3: REGIONAL RISK (Placeholder)
+# ==========================================
+placeholder_text_3 = alt.Chart(pd.DataFrame({'t': ["Regional Risk Matrix Offline."]})).mark_text(
+    fontSize=30, color='#9400D3'
+).encode(text='t:N').properties(width=800, height=400)
+
+page_regional = alt.vconcat(placeholder_text_3).configure_view(stroke=None)
+regional_json = page_regional.to_json()
+# ==========================================
+# 🌐 HTML EXPORT (THE TABBED SPA - SLEDGEHAMMER EDITION)
+# ==========================================
 html_template = f"""
 <!DOCTYPE html>
 <html>
@@ -330,9 +606,58 @@ html_template = f"""
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px;
+      padding: 20px;
     }}
-    #filters {{ 
+    
+    /* 🎛️ CYBERPUNK NAVIGATION BAR */
+    .nav-bar {{
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      background: #1a1a1a;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      box-shadow: 0 4px 15px rgba(0,212,255,0.2);
+    }}
+    .tab-btn {{
+      background: transparent;
+      color: #aaa;
+      border: 2px solid transparent;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }}
+    .tab-btn:hover {{ color: white; border-color: #555; }}
+    .tab-btn.active {{
+      color: #00D4FF;
+      border-color: #00D4FF;
+      text-shadow: 0 0 8px rgba(0,212,255,0.6);
+      box-shadow: inset 0 0 10px rgba(0,212,255,0.2);
+    }}
+
+    /* 📦 DASHBOARD CONTAINERS (THE OVERFLOW HACK) */
+    .dashboard-page {{ 
+      height: 0; 
+      overflow: hidden; 
+      opacity: 0; 
+      pointer-events: none; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      width: 100%;
+    }}
+    .dashboard-page.active {{ 
+      height: auto; 
+      overflow: visible; 
+      opacity: 1; 
+      pointer-events: auto; 
+    }}
+    
+    .filter-box {{ 
       background: #3d3d3d; 
       padding: 15px 25px; 
       border-radius: 12px; 
@@ -345,20 +670,55 @@ html_template = f"""
   </style>
 </head>
 <body>
-    <div id="filters"></div> 
-    <div id="dashboard"></div>
+
+    <div class="nav-bar">
+        <button class="tab-btn active" onclick="switchTab('overview')">1. Overview</button>
+        <button class="tab-btn" onclick="switchTab('socio')">2. Socioeconomic</button>
+        <button class="tab-btn" onclick="switchTab('regional')">3. Regional Risk</button>
+    </div>
+
+    <div id="page-overview" class="dashboard-page active">
+        <div id="filters-overview" class="filter-box"></div> 
+        <div id="vis-overview"></div>
+    </div>
+
+    <div id="page-socio" class="dashboard-page">
+        <div id="filters-socio" class="filter-box"></div> 
+        <div id="vis-socio"></div>
+    </div>
+
+    <div id="page-regional" class="dashboard-page">
+        <div id="filters-regional" class="filter-box"></div> 
+        <div id="vis-regional"></div>
+    </div>
 
   <script>
-    const spec = {master_json};
-    const opt = {{ "bind": "#filters", "actions": false }};
-    vegaEmbed('#dashboard', spec, opt).catch(console.error);
+    // 🧠 VEGA EMBEDDING
+    vegaEmbed('#vis-overview', {overview_json}, {{ "bind": "#filters-overview", "actions": false }}).catch(console.error);
+    vegaEmbed('#vis-socio', {socio_json}, {{ "bind": "#filters-socio", "actions": false }}).catch(console.error);
+    vegaEmbed('#vis-regional', {regional_json}, {{ "bind": "#filters-regional", "actions": false }}).catch(console.error);
+
+    // 🔄 TAB SWITCHING LOGIC WITH RESIZE JOLT
+    function switchTab(tabName) {{
+        // Hide all pages
+        document.querySelectorAll('.dashboard-page').forEach(page => page.classList.remove('active'));
+        // Remove 'active' glow from all buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        // Show the target page
+        document.getElementById('page-' + tabName).classList.add('active');
+        // Add glow to the clicked button
+        event.currentTarget.classList.add('active');
+
+        // THE JOLT: Force the browser to trigger a resize event to wake up the charts!
+        window.dispatchEvent(new Event('resize'));
+    }}
   </script>
 </body>
 </html>
 """
 
-# 3. Save to file
-with open("Tiled_Health_Dashboard.html", "w", encoding="utf-8") as f:
+with open("Interactive_Health_Dashboard.html", "w", encoding="utf-8") as f:
     f.write(html_template)
 
-print("Tiled Dashboard saved! Solid #2b2b2b background with #3d3d3d tiles is ready.")
+print("Multi-page Terminal online. Navigating menus initialized.")

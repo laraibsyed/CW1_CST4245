@@ -1,9 +1,11 @@
 import pandas as pd
 import altair as alt
 
-data = pd.read_pickle("final_code\clean_data.pkl")
+# Load the cleaned data
+data = pd.read_pickle("final_code/clean_data.pkl")
 alt.data_transformers.disable_max_rows()
 
+# --- THEME CONFIGURATION ---
 @alt.theme.register('cyberpunk_dark', enable=True)
 def cyberpunk_theme():
     return alt.theme.ThemeConfig({
@@ -23,233 +25,187 @@ def cyberpunk_theme():
             },
             'title': {
                 'color': '#FFFFFF',
-                'fontSize': 18
+                'fontSize': 18,
+                'anchor': 'middle'
             },
             'mark': {'tooltip': True}
         }
     })
 
+# --- SCALES & SELECTIONS ---
 gender_scale = alt.Scale(domain=['Men', 'Women'], range=['#347DC1', '#FFC0CB']) 
 
 region_options = [None] + sorted(data['Region'].dropna().unique().tolist())
 region_labels = ['All'] + sorted(data['Region'].dropna().unique().tolist())
 
 select_region = alt.selection_point(
-    name="region_socio",  # ← add this
+    name="region_socio",
     fields=['Region'], 
     bind=alt.binding_select(options=region_options, labels=region_labels, name='Region: ')
 )
 
 select_year = alt.selection_point(
-    name="year_socio",    # ← add this too
+    name="year_socio",
     fields=['Year'], 
     bind=alt.binding_range(min=1980, max=2016, step=1, name='Year: '), 
     value=2014
 )
 
-# ── ALL PAGE 2 CHARTS (every single one rebuilt fresh) ────────────────
+# ── TITLE ─────────────────────────────────────────────────────────────
 socio_title = alt.Chart(pd.DataFrame({'t': ["Socioeconomic Risk Analysis"]})).mark_text(
-    align='left', fontSize=28, fontWeight='bold', color='#00D4FF'
-).encode(text='t:N').properties(width=800, height=50)
+    align='center', fontSize=28, fontWeight='bold', color='#00D4FF'
+).encode(text='t:N').properties(width=1100, height=50)
 
-kpi_gdp = alt.Chart(data).mark_text(
-    fontSize=40, fontWeight='bold', color='#00FF9F', align='center'
-).encode(
+# ── ROW 1: KPI TILES ──────────────────────────────────────────────────
+kpi_base = alt.Chart(data).transform_filter(select_region & select_year)
+
+kpi_gdp = kpi_base.mark_text(fontSize=35, fontWeight='bold', color='#00FF9F').encode(
     text=alt.Text('mean(GDP):Q', format='$,.0f')
-).transform_filter(
-    select_region & select_year
-).properties(width=250, height=100, title="Avg GDP per Capita")
+).properties(width=200, height=100, title="Avg GDP per Capita")
 
-kpi_urban = alt.Chart(data).mark_text(
-    fontSize=40, fontWeight='bold', color='#B026FF', align='center'
-).encode(
+kpi_urban = kpi_base.mark_text(fontSize=35, fontWeight='bold', color='#B026FF').encode(
     text=alt.Text('mean(Urban_Population):Q', format='.1f')
-).transform_filter(
-    select_region & select_year
-).properties(width=250, height=100, title=alt.TitleParams(text="Avg Urbanisation %", color='#FFFFFF', fontSize=14))
+).properties(width=200, height=100, title="Avg Urbanisation %")
 
-kpi_gender_risk = alt.Chart(data).transform_filter(
-    select_region & select_year
-).transform_filter(
+kpi_gender_risk = kpi_base.transform_filter(
     alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
 ).transform_aggregate(
-    avg_bmi='mean(BMI)',
-    avg_bp='mean(BP)',
-    avg_diabetes='mean(Diabetes)',
-    groupby=['Gender']
+    avg_bmi='mean(BMI)', avg_bp='mean(BP)', avg_diabetes='mean(Diabetes)', groupby=['Gender']
 ).transform_calculate(
     total_risk="datum.avg_bmi + datum.avg_bp + datum.avg_diabetes"
 ).transform_window(
-    rank='rank()',
-    sort=[alt.SortField('total_risk', order='descending')]
-).transform_filter(
-    'datum.rank == 1'
-).mark_text(
-    fontSize=28, fontWeight='bold', align='center', dy=10
-).encode(
-    text='Gender:N',
-    color=alt.Color('Gender:N', scale=gender_scale, legend=None)
-).properties(width=180, height=80, title=alt.TitleParams(text="Highest Overall Risk", color='#FFFFFF'))
+    rank='rank()', sort=[alt.SortField('total_risk', order='descending')]
+).transform_filter('datum.rank == 1').mark_text(fontSize=28, fontWeight='bold').encode(
+    text='Gender:N', color=alt.Color('Gender:N', scale=gender_scale, legend=None)
+).properties(width=200, height=100, title="Highest Overall Risk")
 
-urban_majority_kpi = alt.Chart(data).transform_filter(
-    select_region & select_year
-).transform_calculate(
-    # 1. Check the "hats" (individual country status) FIRST
-    # Note: Using Urban_Population to match your existing KPI column name
+urban_majority_kpi = kpi_base.transform_calculate(
     is_urban_majority = "datum.Urban_Population > 50 ? 1 : 0"
 ).transform_aggregate(
-    # 2. Now count them up
-    count_majority = "sum(is_urban_majority)",
-    total_count = "count()" 
+    count_majority = "sum(is_urban_majority)", total_count = "count()" 
 ).transform_calculate(
-    # 3. Do the final math
     percentage_majority = "(datum.count_majority / datum.total_count) * 100",
-    display_text = "'% of Countries >50% Urban: ' + format(datum.percentage_majority, '.0f') + '%'"
-).mark_text(
-    fontSize=22, 
-    fontWeight='bold', 
-    color='#00FF9F', 
-    align='center'
-).encode(
+    display_text = "format(datum.percentage_majority, '.0f') + '%'"
+).mark_text(fontSize=35, fontWeight='bold', color='#00FF9F').encode(
     text='display_text:N'
-).properties(
-    width=350, 
-    height=100,
-    title=alt.TitleParams(
-        text="Urban Majority Indicator",
-        color='white',
-        fontSize=14
-    )
-)
+).properties(width=200, height=100, title="Countries >50% Urban")
 
-risk_classification_kpi = alt.Chart(data).transform_filter(
-    select_region & select_year
-).transform_aggregate(
-    # Step 1: Get global averages for the current selection to use as thresholds
-    avg_gdp_global = 'mean(GDP)',
-    avg_bmi_global = 'mean(BMI)',
+risk_classification_kpi = kpi_base.transform_window(
+    avg_gdp_global = 'mean(GDP)', avg_bmi_global = 'mean(BMI)', frame=[None, None]
 ).transform_calculate(
-    # Step 2: Categorize each country
-    # We use a nested ternary: (Condition) ? 'Result' : (Else Condition) ? 'Result' : 'Default'
     risk_cat = (
         "(datum.GDP > datum.avg_gdp_global && datum.BMI > datum.avg_bmi_global) ? 'Affluent Risk' : "
         "(datum.GDP <= datum.avg_gdp_global && datum.BMI > datum.avg_bmi_global) ? 'Emerging Risk' : "
-        "(datum.BMI <= datum.avg_bmi_global) ? 'Low Risk' : 'Other'"
+        "(datum.GDP > datum.avg_gdp_global && datum.BMI <= datum.avg_bmi_global) ? 'Resilient Wealth' : 'Developing Health'"
     )
 ).transform_aggregate(
-    # Step 3: Find which category has the most countries (The Mode)
-    count_per_cat = 'count()',
-    groupby=['risk_cat']
+    count_per_cat = 'count()', groupby=['risk_cat']
 ).transform_window(
-    # Step 4: Rank categories to find the "Dominant" one
-    rank='rank()',
-    sort=[alt.SortField('count_per_cat', order='descending')]
-).transform_filter(
-    'datum.rank == 1'
-).transform_calculate(
-    # Step 5: Final Formatting
-    display_text = "'Dominant Pattern: ' + datum.risk_cat"
-).mark_text(
-    fontSize=22, 
-    fontWeight='bold', 
-    color='#FF4D4D', # Cyberpunk Red for "Risk"
-    align='center'
-).encode(
-    text='display_text:N'
-).properties(
-    width=350, 
-    height=100,
-    title=alt.TitleParams(
-        text="Development vs Risk Classification",
-        subtitle="Identifying Structural Health Trends",
-        color='white'
+    rank='rank()', sort=[alt.SortField('count_per_cat', order='descending')]
+).transform_filter('datum.rank == 1').transform_calculate(
+    status_color = (
+        "datum.risk_cat == 'Emerging Risk' ? '#FF4D4D' : "
+        "datum.risk_cat == 'Affluent Risk' ? '#FFAC1C' : "
+        "datum.risk_cat == 'Resilient Wealth' ? '#00FF9F' : '#00D4FF'"
     )
-)
+).mark_text(fontSize=20, fontWeight='bold').encode(
+    text='risk_cat:N', color=alt.Color('status_color:N', scale=None)
+).properties(width=220, height=100, title="Dominant Risk Pattern")
 
+kpi_row = alt.hconcat(
+    kpi_gdp, kpi_urban, kpi_gender_risk, urban_majority_kpi, risk_classification_kpi
+).resolve_scale(color='independent')
 
-
-base = alt.Chart(data).transform_filter(
-    select_region & select_year
-).transform_filter(
+# ── ROW 2: BAR CHART & HEATMAP ────────────────────────────────────────
+base_bar = alt.Chart(data).transform_filter(select_region & select_year).transform_filter(
     alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
-).transform_fold(
-    ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']
-).encode(
-    x=alt.X('IncomeGroup:N', 
-            title='Income Group', 
-            sort=['High income', 'Upper middle income', 'Lower middle income', 'Low income']),
-    color=alt.Color('Gender:N', scale=gender_scale),
-    xOffset=alt.XOffset('Gender:N')
-)
+).transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
 
-# 1. The Bars: Now with a "Swiss Army Knife" of a tooltip
-bars = base.mark_bar(size=30, opacity=0.8).encode(
-    y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)', scale=alt.Scale(zero=False)),
-    tooltip=[
-        'IncomeGroup:N', 
-        'Gender:N', 
-        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Mean (%)'),
-        # Adding the quantiles here!
-        alt.Tooltip('q1(Prevalence):Q', format='.1f', title='Q1 (25th Perc)'),
-        alt.Tooltip('q3(Prevalence):Q', format='.1f', title='Q3 (75th Perc)'),
-        # Why not add the Standard Deviation too? Just for the flex.
-        alt.Tooltip('stdev(Prevalence):Q', format='.1f', title='Std. Deviation')
-    ]
-)
+bar_socio = alt.layer(
+    base_bar.mark_bar(size=30, opacity=0.8).encode(
+        x=alt.X('IncomeGroup:N', sort=['High income', 'Upper middle income', 'Lower middle income', 'Low income'], title="Income Group"),
+        y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)', scale=alt.Scale(zero=False)),
+        color=alt.Color('Gender:N', scale=gender_scale),
+        xOffset=alt.XOffset('Gender:N'),
+        tooltip=[
+            'IncomeGroup:N', 'Gender:N', 
+            alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Mean (%)'),
+            alt.Tooltip('q1(Prevalence):Q', format='.1f', title='Q1'),
+            alt.Tooltip('q3(Prevalence):Q', format='.1f', title='Q3')
+        ]
+    ),
+    base_bar.mark_errorbar(extent='stdev', color='white').encode(
+        x=alt.X('IncomeGroup:N', sort=['High income', 'Upper middle income', 'Lower middle income', 'Low income']),
+        y=alt.Y('Prevalence:Q'),
+        xOffset=alt.XOffset('Gender:N')
+    )
+).properties(width=550, height=300, title="Prevalence by Income & Gender")
 
-# 2. The Error Bars (Mean +/- Standard Deviation)
-# These stay the same, looking sharp and professional.
-error_bars = base.mark_errorbar(extent='stdev', color='black').encode(
-    y=alt.Y('Prevalence:Q')
-)
-
-# Combine them into the final masterpiece
-bar_socio = (bars + error_bars).properties(
-    width=750, 
-    height=350, 
-    title="Health Distribution: Mean bars with Q1/Q3 in Tooltip"
-)
-
-# ── HEATMAP (static, no signals needed) ──────────────────────────────
 corr_cols = ['BMI', 'BP', 'Diabetes', 'GDP', 'Urban_Population']
 corr_matrix = data[corr_cols].corr().reset_index().melt(id_vars='index')
 corr_matrix.columns = ['Var1', 'Var2', 'Correlation']
 
 heatmap = alt.Chart(corr_matrix).mark_rect().encode(
-    x=alt.X('Var1:N', title=None),
-    y=alt.Y('Var2:N', title=None),
-    color=alt.Color('Correlation:Q',
-                    scale=alt.Scale(scheme='viridis', domain=[-1, 1]),
-                    legend=alt.Legend(title="Pearson Corr")),
+    x=alt.X('Var1:N', title=None), y=alt.Y('Var2:N', title=None),
+    color=alt.Color('Correlation:Q', scale=alt.Scale(scheme='viridis', domain=[-1, 1])),
     tooltip=[alt.Tooltip('Var1:N'), alt.Tooltip('Var2:N'), alt.Tooltip('Correlation:Q', format='.2f')]
-).properties(width=350, height=350, title="Socioeconomic & Health Correlations")
+).properties(width=350, height=300, title="Variable Correlations")
 
-heatmap_text = heatmap.mark_text(baseline='middle').encode(
+row_2 = alt.hconcat(bar_socio, heatmap + heatmap.mark_text().encode(
     text=alt.Text('Correlation:Q', format='.2f'),
     color=alt.condition(alt.datum.Correlation > 0.5, alt.value('black'), alt.value('white'))
+)).resolve_scale(color='independent')
+
+# ── ROW 3: SCATTER & TREND ────────────────────────────────────────────
+metric_dropdown = alt.binding_select(options=['BMI', 'BP', 'Diabetes'], name='Scatter Metric: ')
+select_metric = alt.selection_point(fields=['Metric'], bind=metric_dropdown, value='BMI', name="metric_selector")
+
+scatter = alt.Chart(data).transform_filter(select_region & select_year).transform_fold(
+    ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']
+).transform_filter(select_metric).mark_circle(size=80, opacity=0.7).encode(
+    x=alt.X('GDP:Q', title='GDP per Capita ($)', scale=alt.Scale(type='log')),
+    y=alt.Y('Prevalence:Q', title='Prevalence (%)', scale=alt.Scale(zero=False)),
+    color='Region:N', tooltip=['Country:N', 'GDP:Q', 'Prevalence:Q']
+).properties(width=450, height=350, title="GDP vs. Prevalence Gradient")
+
+metric_radio = alt.binding_radio(options=['BMI', 'BP', 'Diabetes'], name="Trend Metric: ")
+select_metric_trend = alt.selection_point(fields=['Metric'], bind=metric_radio, value='BMI', name="metric_trend")
+
+trend_base = alt.Chart(data).transform_filter(select_region).transform_fold(
+    ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']
+).transform_filter(select_metric_trend).encode(x=alt.X('Year:O', title='Year'))
+
+trend_analysis = alt.layer(
+    trend_base.mark_line(color='#00FF9F', strokeWidth=3).encode(y=alt.Y('mean(GDP):Q', title='Avg GDP ($)')),
+    trend_base.mark_line(color='#FF4D4D', strokeWidth=3).encode(y=alt.Y('mean(Prevalence):Q', title='Prevalence (%)'))
+).resolve_scale(y='independent').add_params(select_metric_trend).properties(
+    width=450, height=350, title="Economic vs. Health Trends"
 )
-final_heatmap = (heatmap + heatmap_text)
 
-# ── ASSEMBLE ──────────────────────────────────────────────────────────
-kpi_row = alt.hconcat(
-    kpi_gdp, kpi_urban, kpi_gender_risk
-).resolve_scale(color='independent')\
+row_3 = alt.hconcat(scatter.add_params(select_metric), trend_analysis).resolve_scale(color='independent')
 
-kpi_row_2 = alt.hconcat(
-    urban_majority_kpi, risk_classification_kpi
-).resolve_scale(color='independent')
-
+# ── ASSEMBLY ──────────────────────────────────────────────────────────
+# Note: Based on your traceback, 'center' is a direct parameter of VConcatChart
 page_socio = alt.vconcat(
-    socio_title,
+    socio_title, 
     kpi_row, 
-    kpi_row_2,
-    bar_socio,
-    final_heatmap
+    row_2, 
+    row_3,
+    spacing=50,
+    center=True # Moving center here instead of configure_concat
 ).add_params(
-    select_region, select_year  # ← ONLY page 2 signals here
-).configure_view(stroke=None).configure_concat(spacing=40)
+    select_region, 
+    select_year
+)
 
-# ── SAVE AS SEPARATE HTML ─────────────────────────────────────────────
+# Apply global configurations (Keeping it minimal to avoid schema conflicts)
+page_socio = page_socio.configure_view(
+    stroke=None
+).configure_title(
+    anchor='middle'
+)
+
+# Save the dashboard
 page_socio.save('page2_socio.html')
 socio_json = page_socio.to_json()
 print("Page 2 saved ✅")
@@ -258,7 +214,6 @@ print("Page 2 saved ✅")
 def save_dashboard(chart, filename, active_page):
     chart_json = chart.to_json()
     
-    # Set which button is active based on current page
     btn1 = 'active' if active_page == 'overview' else ''
     btn2 = 'active' if active_page == 'socio' else ''
     btn3 = 'active' if active_page == 'regional' else ''

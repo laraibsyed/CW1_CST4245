@@ -166,6 +166,8 @@ risk_classification_kpi = alt.Chart(data).transform_filter(
     )
 )
 
+
+
 base = alt.Chart(data).transform_filter(
     select_region & select_year
 ).transform_filter(

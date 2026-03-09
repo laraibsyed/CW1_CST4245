@@ -1,6 +1,5 @@
 import pandas as pd
 import altair as alt
-import squarify
 
 # Load the cleaned data
 data = pd.read_pickle("final_code/clean_data.pkl")
@@ -33,20 +32,22 @@ def cyberpunk_theme():
         }
     })
 
-# --- GLOBAL SELECTIONS ---
+gender_scale = alt.Scale(domain=['Men', 'Women'], range=['#347DC1', '#FFC0CB']) 
+
+region_options = [None] + sorted(data['Region'].dropna().unique().tolist())
+region_labels = ['All'] + sorted(data['Region'].dropna().unique().tolist())
+
+select_region = alt.selection_point(
+    name="region_regional",
+    fields=['Region'], 
+    bind=alt.binding_select(options=region_options, labels=region_labels, name='Region: ')
+)
+
 select_year = alt.selection_point(
-    name="year_socio",
+    name="year_regional",
     fields=['Year'], 
     bind=alt.binding_range(min=1980, max=2016, step=1, name='Year: '), 
     value=2014
-)
-
-metric_radio_reg = alt.binding_radio(options=['BMI', 'BP', 'Diabetes'], name="Select Metric: ")
-select_metric_reg = alt.selection_point(
-    fields=['Metric'],  # ← matches the line chart fold name
-    bind=metric_radio_reg,
-    value='BMI',
-    name="reg_metric"
 )
 
 # ── TITLE ─────────────────────────────────────────────────────────────
@@ -162,45 +163,30 @@ most_improved_kpi = finalize_kpi_multiline(
 
 # ── LINE CHART — Regional Risk Evolution ─────────────────────────────
 regional_line_chart = alt.Chart(data).transform_fold(
-    ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence_line']
-).transform_filter(
-    select_metric_reg
+    ['BMI', 'BP', 'Diabetes'],
+    as_=['Metric_l', 'Prevalence']
 ).mark_line(
     point=True,
     interpolate='monotone',
     strokeWidth=3
 ).encode(
-    x=alt.X(
-        'Year:Q',
-        title='Year',
-        axis=alt.Axis(format='d', grid=False)
+    x=alt.X('Year:Q', title='Year', axis=alt.Axis(format='d', grid=False)),
+    y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)', scale=alt.Scale(zero=False)),
+    color=alt.Color('Region:N', scale=alt.Scale(scheme='tableau10')),
+    opacity=alt.condition(
+        select_metric_line,   # ← condition instead of filter
+        alt.value(1.0),
+        alt.value(0.0)       # hide non-selected metrics rather than filtering them out
     ),
-    y=alt.Y(
-        'mean(Prevalence_line):Q',
-        title='Mean Prevalence (%)',
-        scale=alt.Scale(zero=False)
-    ),
-    color=alt.Color(
-        'Region:N',
-        scale=alt.Scale(scheme='tableau10'),
-        legend=alt.Legend(title="Region")
-    ),
-    
-    # 🔧 THIS LINE FIXES THE FILTER ISSUE
     detail='Metric:N',
-
     tooltip=[
-        alt.Tooltip('Region:N', title='Region'),
-        alt.Tooltip('Year:Q', format='d', title='Year'),
-        alt.Tooltip('mean(Prevalence_line):Q', format='.1f', title='Avg Prevalence %')
+        alt.Tooltip('Region:N'),
+        alt.Tooltip('Year:Q', format='d'),
+        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg %')
     ]
 ).properties(
-    width=1000,
-    height=350,
-    title=alt.TitleParams(
-        text="Global Velocity: Regional Risk Evolution",
-        anchor='middle'
-    )
+    width=1000, height=350,
+    title="Global Velocity: Regional Risk Evolution"
 )
 
 # ── GROUPED BAR — uses 'Metric_bar' and 'Prevalence_bar' ─────────────

@@ -137431,13 +137431,13 @@
       "value": 2014,
       "views": [
         "view_12fd971db5eaa487_0",
-        "view_4cdd23b996001f8b_0",
-        "view_b27ad22b7c28368f_1",
-        "view_cc98af46146a7733_2",
-        "view_59c8200357727dab_3",
-        "view_a0fb4be841dd39de_4",
-        "view_a6aa4e5fa388e474_2",
-        "view_a20195a9ba99cfa1_3"
+        "view_4b56b8b418f8a5f1_0",
+        "view_f7bf9c6f1dced844_1",
+        "view_9c4fc3a30d853f1e_2",
+        "view_824be448cdb2fc33_3",
+        "view_991d59a20a4879cd_4",
+        "view_2235fce2237eb192_2",
+        "view_058a4c5b3e1b5f09_3"
       ]
     },
     {
@@ -137450,7 +137450,7 @@
           "Diabetes"
         ]
       },
-      "name": "reg_metric",
+      "name": "reg_metric_line",
       "select": {
         "fields": [
           "Metric"
@@ -137460,13 +137460,42 @@
       "value": "BMI",
       "views": [
         "view_12fd971db5eaa487_0",
-        "view_4cdd23b996001f8b_0",
-        "view_b27ad22b7c28368f_1",
-        "view_cc98af46146a7733_2",
-        "view_59c8200357727dab_3",
-        "view_a0fb4be841dd39de_4",
-        "view_a6aa4e5fa388e474_2",
-        "view_a20195a9ba99cfa1_3"
+        "view_4b56b8b418f8a5f1_0",
+        "view_f7bf9c6f1dced844_1",
+        "view_9c4fc3a30d853f1e_2",
+        "view_824be448cdb2fc33_3",
+        "view_991d59a20a4879cd_4",
+        "view_2235fce2237eb192_2",
+        "view_058a4c5b3e1b5f09_3"
+      ]
+    },
+    {
+      "bind": {
+        "input": "radio",
+        "name": "Select Metric: ",
+        "options": [
+          "BMI",
+          "BP",
+          "Diabetes"
+        ]
+      },
+      "name": "reg_metric_bar",
+      "select": {
+        "fields": [
+          "Metric_bar"
+        ],
+        "type": "point"
+      },
+      "value": "BMI",
+      "views": [
+        "view_12fd971db5eaa487_0",
+        "view_4b56b8b418f8a5f1_0",
+        "view_f7bf9c6f1dced844_1",
+        "view_9c4fc3a30d853f1e_2",
+        "view_824be448cdb2fc33_3",
+        "view_991d59a20a4879cd_4",
+        "view_2235fce2237eb192_2",
+        "view_058a4c5b3e1b5f09_3"
       ]
     }
   ],
@@ -137515,7 +137544,7 @@
             "lineBreak": "\n",
             "type": "text"
           },
-          "name": "view_4cdd23b996001f8b_0",
+          "name": "view_4b56b8b418f8a5f1_0",
           "title": {
             "anchor": "middle",
             "color": "white",
@@ -137541,7 +137570,7 @@
             },
             {
               "filter": {
-                "param": "reg_metric"
+                "param": "reg_metric_line"
               }
             },
             {
@@ -137599,7 +137628,7 @@
             "lineBreak": "\n",
             "type": "text"
           },
-          "name": "view_b27ad22b7c28368f_1",
+          "name": "view_f7bf9c6f1dced844_1",
           "title": {
             "anchor": "middle",
             "color": "white",
@@ -137625,7 +137654,7 @@
             },
             {
               "filter": {
-                "param": "reg_metric"
+                "param": "reg_metric_line"
               }
             },
             {
@@ -137683,7 +137712,7 @@
             "lineBreak": "\n",
             "type": "text"
           },
-          "name": "view_cc98af46146a7733_2",
+          "name": "view_9c4fc3a30d853f1e_2",
           "title": {
             "anchor": "middle",
             "color": "white",
@@ -137704,7 +137733,7 @@
             },
             {
               "filter": {
-                "param": "reg_metric"
+                "param": "reg_metric_line"
               }
             },
             {
@@ -137804,7 +137833,7 @@
             "lineBreak": "\n",
             "type": "text"
           },
-          "name": "view_59c8200357727dab_3",
+          "name": "view_824be448cdb2fc33_3",
           "title": {
             "anchor": "middle",
             "color": "white",
@@ -137839,7 +137868,7 @@
             },
             {
               "filter": {
-                "param": "reg_metric"
+                "param": "reg_metric_line"
               }
             },
             {
@@ -137920,7 +137949,7 @@
             "lineBreak": "\n",
             "type": "text"
           },
-          "name": "view_a0fb4be841dd39de_4",
+          "name": "view_991d59a20a4879cd_4",
           "title": {
             "anchor": "middle",
             "color": "white",
@@ -137941,7 +137970,7 @@
             },
             {
               "filter": {
-                "param": "reg_metric"
+                "param": "reg_metric_line"
               }
             },
             {
@@ -138029,35 +138058,30 @@
       "encoding": {
         "color": {
           "field": "Region",
-          "legend": {
-            "title": "Region"
-          },
           "scale": {
             "scheme": "tableau10"
           },
           "type": "nominal"
         },
         "detail": {
-          "field": "Metric",
+          "field": "Region",
           "type": "nominal"
         },
         "tooltip": [
           {
             "field": "Region",
-            "title": "Region",
             "type": "nominal"
           },
           {
             "field": "Year",
             "format": "d",
-            "title": "Year",
             "type": "quantitative"
           },
           {
             "aggregate": "mean",
-            "field": "Prevalence_line",
+            "field": "Prevalence",
             "format": ".1f",
-            "title": "Avg Prevalence %",
+            "title": "Avg %",
             "type": "quantitative"
           }
         ],
@@ -138072,7 +138096,7 @@
         },
         "y": {
           "aggregate": "mean",
-          "field": "Prevalence_line",
+          "field": "Prevalence",
           "scale": {
             "zero": false
           },
@@ -138087,16 +138111,13 @@
         "strokeWidth": 3,
         "type": "line"
       },
-      "name": "view_a6aa4e5fa388e474_2",
-      "title": {
-        "anchor": "middle",
-        "text": "Global Velocity: Regional Risk Evolution"
-      },
+      "name": "view_2235fce2237eb192_2",
+      "title": "Global Velocity: Regional Risk Evolution",
       "transform": [
         {
           "as": [
             "Metric",
-            "Prevalence_line"
+            "Prevalence"
           ],
           "fold": [
             "BMI",
@@ -138106,7 +138127,7 @@
         },
         {
           "filter": {
-            "param": "reg_metric"
+            "param": "reg_metric_line"
           }
         }
       ],
@@ -138181,7 +138202,7 @@
         "cornerRadiusTopRight": 3,
         "type": "bar"
       },
-      "name": "view_a20195a9ba99cfa1_3",
+      "name": "view_058a4c5b3e1b5f09_3",
       "title": {
         "anchor": "middle",
         "color": "white",
@@ -138205,6 +138226,11 @@
             "BP",
             "Diabetes"
           ]
+        },
+        {
+          "filter": {
+            "param": "reg_metric_bar"
+          }
         }
       ],
       "width": 1000

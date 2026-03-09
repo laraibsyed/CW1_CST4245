@@ -137415,35 +137415,6 @@
   "params": [
     {
       "bind": {
-        "input": "radio",
-        "name": "Select Metric: ",
-        "options": [
-          "BMI",
-          "BP",
-          "Diabetes"
-        ]
-      },
-      "name": "reg_metric",
-      "select": {
-        "fields": [
-          "Metric"
-        ],
-        "type": "point"
-      },
-      "value": "BMI",
-      "views": [
-        "view_b77f0d132c6b17a1_2",
-        "view_12fd971db5eaa487_0",
-        "view_4cdd23b996001f8b_0",
-        "view_b27ad22b7c28368f_1",
-        "view_cc98af46146a7733_2",
-        "view_59c8200357727dab_3",
-        "view_2ce8786918bf082f_4",
-        "view_40d88e5e7d7bf9a2_3"
-      ]
-    },
-    {
-      "bind": {
         "input": "range",
         "max": 2016,
         "min": 1980,
@@ -137464,9 +137435,38 @@
         "view_b27ad22b7c28368f_1",
         "view_cc98af46146a7733_2",
         "view_59c8200357727dab_3",
-        "view_2ce8786918bf082f_4",
-        "view_b77f0d132c6b17a1_2",
-        "view_40d88e5e7d7bf9a2_3"
+        "view_a0fb4be841dd39de_4",
+        "view_a6aa4e5fa388e474_2",
+        "view_a20195a9ba99cfa1_3"
+      ]
+    },
+    {
+      "bind": {
+        "input": "radio",
+        "name": "Select Metric: ",
+        "options": [
+          "BMI",
+          "BP",
+          "Diabetes"
+        ]
+      },
+      "name": "reg_metric",
+      "select": {
+        "fields": [
+          "Metric"
+        ],
+        "type": "point"
+      },
+      "value": "BMI",
+      "views": [
+        "view_12fd971db5eaa487_0",
+        "view_4cdd23b996001f8b_0",
+        "view_b27ad22b7c28368f_1",
+        "view_cc98af46146a7733_2",
+        "view_59c8200357727dab_3",
+        "view_a0fb4be841dd39de_4",
+        "view_a6aa4e5fa388e474_2",
+        "view_a20195a9ba99cfa1_3"
       ]
     }
   ],
@@ -137920,7 +137920,7 @@
             "lineBreak": "\n",
             "type": "text"
           },
-          "name": "view_2ce8786918bf082f_4",
+          "name": "view_a0fb4be841dd39de_4",
           "title": {
             "anchor": "middle",
             "color": "white",
@@ -138010,7 +138010,7 @@
             },
             {
               "as": "display_text",
-              "calculate": "datum.Region + '\\n(' + format(datum.growth, '.1f') + 'pp)'"
+              "calculate": "datum.Region + '\\n(+' + format(datum.growth, '.1f') + 'pp)'"
             }
           ],
           "width": 215
@@ -138029,37 +138029,50 @@
       "encoding": {
         "color": {
           "field": "Region",
+          "legend": {
+            "title": "Region"
+          },
           "scale": {
             "scheme": "tableau10"
           },
-          "title": "Region",
+          "type": "nominal"
+        },
+        "detail": {
+          "field": "Metric",
           "type": "nominal"
         },
         "tooltip": [
           {
             "field": "Region",
+            "title": "Region",
             "type": "nominal"
           },
           {
             "field": "Year",
-            "type": "ordinal"
+            "format": "d",
+            "title": "Year",
+            "type": "quantitative"
           },
           {
             "aggregate": "mean",
-            "field": "Prevalence",
+            "field": "Prevalence_line",
             "format": ".1f",
-            "title": "Avg %",
+            "title": "Avg Prevalence %",
             "type": "quantitative"
           }
         ],
         "x": {
+          "axis": {
+            "format": "d",
+            "grid": false
+          },
           "field": "Year",
-          "title": "Year (1980\u20132016)",
-          "type": "ordinal"
+          "title": "Year",
+          "type": "quantitative"
         },
         "y": {
           "aggregate": "mean",
-          "field": "Prevalence",
+          "field": "Prevalence_line",
           "scale": {
             "zero": false
           },
@@ -138067,25 +138080,23 @@
           "type": "quantitative"
         }
       },
-      "height": 400,
+      "height": 350,
       "mark": {
         "interpolate": "monotone",
         "point": true,
         "strokeWidth": 3,
         "type": "line"
       },
-      "name": "view_b77f0d132c6b17a1_2",
+      "name": "view_a6aa4e5fa388e474_2",
       "title": {
         "anchor": "middle",
-        "fontSize": 22,
-        "subtitle": "Tracking the trajectory of health risks across geographic boundaries",
-        "text": "Global Velocity: Regional Risk Evolution (1980\u20132016)"
+        "text": "Global Velocity: Regional Risk Evolution"
       },
       "transform": [
         {
           "as": [
             "Metric",
-            "Prevalence"
+            "Prevalence_line"
           ],
           "fold": [
             "BMI",
@@ -138107,12 +138118,22 @@
       },
       "encoding": {
         "color": {
-          "field": "Region",
+          "field": "Metric_bar",
           "legend": {
-            "title": "Region"
+            "orient": "top",
+            "title": "Health Indicator"
           },
           "scale": {
-            "scheme": "tableau20"
+            "domain": [
+              "BMI",
+              "BP",
+              "Diabetes"
+            ],
+            "range": [
+              "#FF4D4D",
+              "#00FF9F",
+              "#B026FF"
+            ]
           },
           "type": "nominal"
         },
@@ -138122,75 +138143,71 @@
             "type": "nominal"
           },
           {
-            "field": "Country",
+            "field": "Metric_bar",
             "type": "nominal"
           },
           {
             "aggregate": "mean",
-            "field": "Prevalence",
+            "field": "Prevalence_bar",
             "format": ".1f",
             "title": "Avg Prevalence %",
             "type": "quantitative"
           }
         ],
         "x": {
-          "aggregate": "mean",
-          "axis": null,
-          "field": "Prevalence",
-          "stack": "normalize",
+          "axis": {
+            "labelAngle": -45,
+            "labelColor": "white"
+          },
+          "field": "Region",
           "title": null,
-          "type": "quantitative"
+          "type": "nominal"
+        },
+        "xOffset": {
+          "field": "Metric_bar",
+          "type": "nominal"
         },
         "y": {
-          "aggregate": "count",
-          "axis": null,
-          "stack": "normalize",
-          "title": null,
+          "aggregate": "mean",
+          "field": "Prevalence_bar",
+          "stack": null,
+          "title": "Mean Prevalence (%)",
           "type": "quantitative"
         }
       },
       "height": 400,
       "mark": {
-        "type": "rect"
+        "cornerRadiusTopLeft": 3,
+        "cornerRadiusTopRight": 3,
+        "type": "bar"
       },
-      "name": "view_40d88e5e7d7bf9a2_3",
+      "name": "view_a20195a9ba99cfa1_3",
       "title": {
         "anchor": "middle",
-        "fontSize": 20,
-        "subtitle": "Comparing the relative weight of health risks by territory",
-        "text": "Regional Risk Composition"
+        "color": "white",
+        "fontSize": 22,
+        "subtitle": "Comparing the relative prevalence of BMI, Blood Pressure, and Diabetes",
+        "text": "Regional Health Dominance Comparison"
       },
       "transform": [
         {
           "filter": {
-            "and": [
-              {
-                "param": "year_socio"
-              },
-              {
-                "param": "reg_metric"
-              }
-            ]
+            "param": "year_socio"
           }
         },
         {
           "as": [
-            "Metric",
-            "Prevalence"
+            "Metric_bar",
+            "Prevalence_bar"
           ],
           "fold": [
             "BMI",
             "BP",
             "Diabetes"
           ]
-        },
-        {
-          "filter": {
-            "param": "reg_metric"
-          }
         }
       ],
-      "width": 500
+      "width": 1000
     }
   ]
 }, { actions: false, bind: '#filters' }).catch(console.error);

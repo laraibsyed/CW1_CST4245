@@ -1,5 +1,6 @@
 import pandas as pd
 import altair as alt
+import squarify
 
 # Load the cleaned data
 data = pd.read_pickle("final_code/clean_data.pkl")
@@ -42,9 +43,9 @@ select_year = alt.selection_point(
 
 metric_radio_reg = alt.binding_radio(options=['BMI', 'BP', 'Diabetes'], name="Select Metric: ")
 select_metric_reg = alt.selection_point(
-    fields=['Metric'], 
-    bind=metric_radio_reg, 
-    value='BMI', 
+    fields=['Metric'],  # ← matches the line chart fold name
+    bind=metric_radio_reg,
+    value='BMI',
     name="reg_metric"
 )
 
@@ -56,7 +57,7 @@ regional_title = alt.Chart(pd.DataFrame({'t': ["Regional Risk Analysis"]})).mark
 # ── MULTI-LINE KPI HELPER ─────────────────────────────────────────────
 def finalize_kpi_multiline(chart, title_text, color_hex):
     return chart.properties(
-        width=215, height=160, # Height increased for comfortable two-line display
+        width=215, height=160,
         title=alt.TitleParams(text=title_text, fontSize=20, anchor='middle', color='white')
     ).mark_text(
         fontSize=15, 
@@ -64,7 +65,7 @@ def finalize_kpi_multiline(chart, title_text, color_hex):
         color=color_hex, 
         align='center',
         baseline='middle',
-        lineBreak='\n' # Enables the newline rendering in the browser
+        lineBreak='\n'
     )
 
 # ── KPI 1: Highest Risk ───────────────────────────────────────────────
@@ -76,7 +77,6 @@ highest_risk_kpi = finalize_kpi_multiline(
     ).transform_window(
         rank='rank()', sort=[alt.SortField('avg_prev', order='descending')]
     ).transform_filter('datum.rank == 1').transform_calculate(
-        # Double backslash \\n prevents the JavaScript "ILLEGAL token" error
         display_text = "datum.Region + '\\n(' + format(datum.avg_prev, '.1f') + '%)'"
     ).encode(text='display_text:N'),
     "Highest Risk", '#FF4D4D'
@@ -132,7 +132,6 @@ gender_gap_kpi = finalize_kpi_multiline(
 )
 
 # ── KPI 5: Most Stable ───────────────────────────────────────────────
-# ── KPI 5: Most Stable (FIXED) ───────────────────────────────────────
 most_improved_kpi = finalize_kpi_multiline(
     alt.Chart(data).transform_fold(
         ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']
@@ -146,8 +145,6 @@ most_improved_kpi = finalize_kpi_multiline(
     ).transform_calculate(
         growth = "datum.last_val - datum.first_val"
     ).transform_window(
-        # CHANGE: Use row_number() to ensure only ONE row is ever #1
-        # Added Region as a tie-breaker sort
         rank='row_number()', 
         sort=[
             alt.SortField('growth', order='ascending'),
@@ -156,75 +153,80 @@ most_improved_kpi = finalize_kpi_multiline(
     ).transform_filter(
         'datum.rank == 1'
     ).transform_calculate(
-        # Double backslash fix for the previous ILLEGAL token error
-        display_text = "datum.Region + '\\n(' + format(datum.growth, '.1f') + 'pp)'"
+        display_text = "datum.Region + '\\n(+' + format(datum.growth, '.1f') + 'pp)'"
     ).encode(
         text='display_text:N'
     ),
     "Most Stable", '#00D4FF'
 )
 
-# 1. Selection for the health metric (Re-using reg_metric from your KPIs)
-# This ensures that when you click 'BMI', the line chart and KPIs update together.
-
-# 2. The Multi-Line Chart
+# ── LINE CHART — Regional Risk Evolution ─────────────────────────────
 regional_line_chart = alt.Chart(data).transform_fold(
-    ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']
+    ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence_line']
 ).transform_filter(
-    select_metric_reg # Linked to your radio buttons
-).mark_line(point=True, interpolate='monotone', strokeWidth=3).encode(
-    x=alt.X('Year:O', title='Year (1980–2016)'),
-    y=alt.Y('mean(Prevalence):Q', 
-            title='Mean Prevalence (%)', 
-            scale=alt.Scale(zero=False)),
-    color=alt.Color('Region:N', 
-                    title='Region', 
-                    scale=alt.Scale(scheme='tableau10')), # Distinct colors for each line
-    tooltip=[
+    select_metric_reg
+).mark_line(
+    point=True,
+    interpolate='monotone',
+    strokeWidth=3
+).encode(
+    x=alt.X(
+        'Year:Q',
+        title='Year',
+        axis=alt.Axis(format='d', grid=False)
+    ),
+    y=alt.Y(
+        'mean(Prevalence_line):Q',
+        title='Mean Prevalence (%)',
+        scale=alt.Scale(zero=False)
+    ),
+    color=alt.Color(
         'Region:N',
-        'Year:O',
-        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg %')
+        scale=alt.Scale(scheme='tableau10'),
+        legend=alt.Legend(title="Region")
+    ),
+    
+    # 🔧 THIS LINE FIXES THE FILTER ISSUE
+    detail='Metric:N',
+
+    tooltip=[
+        alt.Tooltip('Region:N', title='Region'),
+        alt.Tooltip('Year:Q', format='d', title='Year'),
+        alt.Tooltip('mean(Prevalence_line):Q', format='.1f', title='Avg Prevalence %')
     ]
 ).properties(
-    width=1000, # Wide layout to show the full 36-year timeline
-    height=400,
+    width=1000,
+    height=350,
     title=alt.TitleParams(
-        text="Global Velocity: Regional Risk Evolution (1980–2016)",
-        subtitle="Tracking the trajectory of health risks across geographic boundaries",
-        fontSize=22,
+        text="Global Velocity: Regional Risk Evolution",
         anchor='middle'
     )
-).add_params(
-    select_metric_reg
 )
 
-treemap_reg = alt.Chart(data).transform_filter(
-    select_year & select_metric_reg
+# ── GROUPED BAR — uses 'Metric_bar' and 'Prevalence_bar' ─────────────
+region_grouped_bar = alt.Chart(data).transform_filter(
+    select_year
 ).transform_fold(
-    ['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']
-).transform_filter(
-    select_metric_reg
-).mark_rect().encode(
-    # SIZE logic: We use 'x' and 'y' to create the tiles 
-    # based on the underlying population or prevalence sum
-    x=alt.X('mean(Prevalence):Q', stack='normalize', title=None, axis=None),
-    y=alt.Y('count():Q', stack='normalize', title=None, axis=None),
-    color=alt.Color('Region:N', 
-                    legend=alt.Legend(title="Region"),
-                    scale=alt.Scale(scheme='tableau20')),
+    ['BMI', 'BP', 'Diabetes'], as_=['Metric_bar', 'Prevalence_bar']
+).mark_bar(cornerRadiusTopLeft=3, cornerRadiusTopRight=3).encode(
+    x=alt.X('Region:N', title=None, axis=alt.Axis(labelAngle=-45, labelColor='white')),
+    y=alt.Y('mean(Prevalence_bar):Q', title='Mean Prevalence (%)', stack=None),
+    xOffset='Metric_bar:N',
+    color=alt.Color('Metric_bar:N',
+                    scale=alt.Scale(domain=['BMI', 'BP', 'Diabetes'],
+                                    range=['#FF4D4D', '#00FF9F', '#B026FF']),
+                    legend=alt.Legend(title="Health Indicator", orient='top')),
     tooltip=[
         'Region:N',
-        'Country:N',
-        alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Avg Prevalence %')
+        'Metric_bar:N',
+        alt.Tooltip('mean(Prevalence_bar):Q', format='.1f', title='Avg Prevalence %')
     ]
 ).properties(
-    width=500,
-    height=400,
+    width=1000, height=400,
     title=alt.TitleParams(
-        text="Regional Risk Composition",
-        subtitle="Comparing the relative weight of health risks by territory",
-        fontSize=20,
-        anchor='middle'
+        text="Regional Health Dominance Comparison",
+        subtitle="Comparing the relative prevalence of BMI, Blood Pressure, and Diabetes",
+        fontSize=22, anchor='middle', color='white'
     )
 )
 
@@ -238,9 +240,9 @@ page_regional = alt.vconcat(
     regional_title, 
     kpi_row,
     regional_line_chart,
-    treemap_reg,
+    region_grouped_bar,
     spacing=60,
-    center=True # Vertically aligns the row with the center of the title
+    center=True 
 ).add_params(
     select_year,
     select_metric_reg

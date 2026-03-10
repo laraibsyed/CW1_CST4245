@@ -5,23 +5,81 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
   <style>
-    body { background-color: #2b2b2b; font-family: 'Segoe UI', sans-serif; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    .nav-bar { display: flex; gap: 15px; margin-bottom: 30px; background: #1a1a1a; padding: 10px 20px; border-radius: 8px; border: 1px solid #444; }
-    .tab-btn { background: transparent; color: #aaa; border: 2px solid transparent; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; text-decoration: none; transition: 0.3s; }
-    .tab-btn.active { color: #00D4FF; border-color: #00D4FF; }
-    .filter-box { background: #3d3d3d; padding: 15px 25px; border-radius: 12px; border: 1px solid #555; margin-bottom: 30px; }
+    body { 
+      background-color: #2b2b2b;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      color: white; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .nav-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      background: #1a1a1a;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      box-shadow: 0 4px 15px rgba(0,212,255,0.2);
+    }
+    .tab-btn {
+      background: transparent;
+      color: #aaa;
+      border: 2px solid transparent;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    .tab-btn:hover { color: white; border-color: #555; }
+    .tab-btn.active {
+      color: #00D4FF;
+      border-color: #00D4FF;
+      text-shadow: 0 0 8px rgba(0,212,255,0.6);
+      box-shadow: inset 0 0 10px rgba(0,212,255,0.2);
+    }
+    .sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #2b2b2b;
+      padding-bottom: 10px;
+    }
+    .filter-box { 
+      background: #3d3d3d; 
+      padding: 15px 25px; 
+      border-radius: 12px; 
+      border: 1px solid #555;
+      margin-bottom: 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      width: fit-content;
+    }
     .vega-bind { color: white !important; font-size: 14px; margin-right: 20px; }
     .vega-bind-name { font-weight: bold; color: #00D4FF; }
   </style>
 </head>
 <body>
-  <div class="nav-bar">
-    <a href="page1_overview.html" class="tab-btn ">1. Overview</a>
-    <a href="page2_socio.html" class="tab-btn ">2. Socioeconomic</a>
-    <a href="page3_regional.html" class="tab-btn active">3. Regional Risk</a>
+
+  <div class="sticky-bar">
+    <div class="nav-bar">
+      <a href="page1_overview.html"  class="tab-btn ">1. Overview</a>
+      <a href="page2_socio.html"     class="tab-btn ">2. Socioeconomic</a>
+      <a href="page3_regional.html"  class="tab-btn active">3. Regional Risk</a>
+    </div>
+    <div id="filters" class="filter-box"></div>
   </div>
-  <div id="filters" class="filter-box"></div>
+
   <div id="vis"></div>
+
   <script>
     vegaEmbed('#vis', {
   "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json",
@@ -52,6 +110,4567 @@
     }
   },
   "datasets": {
+    "data-3ac923e5785cd9d6ff426aa71de8f3ec": [
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "early": 3.0464638163601667,
+        "growth": 6.877708837721743,
+        "late": 9.924172654081909
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "early": 9.853756182449128,
+        "growth": 12.033817646050696,
+        "late": 21.887573828499825
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "early": 8.390170941513153,
+        "growth": 15.273250244867642,
+        "late": 23.663421186380795
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "early": 12.152845300041292,
+        "growth": 15.325990241777571,
+        "late": 27.478835541818864
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "early": 12.93371144725695,
+        "growth": 19.6900630768419,
+        "late": 32.62377452409885
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "early": 0.5147967938987845,
+        "growth": 3.3721195540806153,
+        "late": 3.8869163479793998
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "early": 2.085786145672707,
+        "growth": 7.439708195192914,
+        "late": 9.52549434086562
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "early": 26.513077435267526,
+        "growth": -5.70697684508804,
+        "late": 20.806100590179486
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "early": 35.28523376023026,
+        "growth": -10.332663337462936,
+        "late": 24.952570422767327
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "early": 28.689666694726494,
+        "growth": -7.504332082780234,
+        "late": 21.18533461194626
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "early": 33.66532853852775,
+        "growth": -9.7971967623041,
+        "late": 23.868131776223652
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "early": 25.970945769929326,
+        "growth": -12.683782627334026,
+        "late": 13.2871631425953
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "early": 22.127077598026712,
+        "growth": 3.4245205363878135,
+        "late": 25.551598134414526
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "early": 27.941743351828993,
+        "growth": 0.49194080471631807,
+        "late": 28.43368415654531
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "early": 4.718138255117734,
+        "growth": 3.007237327283029,
+        "late": 7.725375582400763
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "early": 5.075271079045659,
+        "growth": 2.3864739814247713,
+        "late": 7.46174506047043
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "early": 5.185149538976655,
+        "growth": 4.7132525091850725,
+        "late": 9.898402048161728
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "early": 7.012441744561452,
+        "growth": 6.782990901177301,
+        "late": 13.795432645738753
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "early": 4.508049832127647,
+        "growth": 1.8912120061532303,
+        "late": 6.399261838280878
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "early": 3.79409430130295,
+        "growth": 5.310056369583535,
+        "late": 9.104150670886485
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "early": 3.1821332857899223,
+        "growth": 4.199248973323634,
+        "late": 7.381382259113557
+      }
+    ],
+    "data-753b75e662d12f95c80e32bcec317c59": [
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1980,
+        "gap": 1.5460930737117518
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1980,
+        "gap": 4.997959491113336
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1980,
+        "gap": 7.155811824558839
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1980,
+        "gap": 10.260485268558632
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1980,
+        "gap": 2.5903288130958
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1980,
+        "gap": 0.58423063501873
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1980,
+        "gap": 2.967346058602395
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1981,
+        "gap": 1.576203485160665
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1981,
+        "gap": 4.993376037347217
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1981,
+        "gap": 7.321917177984273
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1981,
+        "gap": 10.419179825277826
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1981,
+        "gap": 2.5876929058248006
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1981,
+        "gap": 0.6170240168422845
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1981,
+        "gap": 3.1081439128052835
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1982,
+        "gap": 1.606787907933315
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1982,
+        "gap": 4.981508210061668
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1982,
+        "gap": 7.487974514732336
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1982,
+        "gap": 10.571064982910555
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1982,
+        "gap": 2.5845711511176486
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1982,
+        "gap": 0.651481761435035
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1982,
+        "gap": 3.2544257945238293
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1983,
+        "gap": 1.6380211204078194
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1983,
+        "gap": 4.962577968717914
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1983,
+        "gap": 7.653511023109545
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1983,
+        "gap": 10.716107068052533
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1983,
+        "gap": 2.5813475014495495
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1983,
+        "gap": 0.6876127059124821
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1983,
+        "gap": 3.4060085587958975
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1984,
+        "gap": 1.6699764681835867
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1984,
+        "gap": 4.937082134947559
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1984,
+        "gap": 7.818668557524065
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1984,
+        "gap": 10.854737304034424
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1984,
+        "gap": 2.577307922231352
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1984,
+        "gap": 0.7255340263653123
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1984,
+        "gap": 3.563155454100673
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1985,
+        "gap": 1.702115197416938
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1985,
+        "gap": 4.889634784385418
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1985,
+        "gap": 7.982527767788065
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1985,
+        "gap": 10.986039055208726
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1985,
+        "gap": 2.5710852472758496
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1985,
+        "gap": 0.765089145144924
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1985,
+        "gap": 3.7256625822981326
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1986,
+        "gap": 1.7351509747320373
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1986,
+        "gap": 4.848526487333224
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1986,
+        "gap": 8.143042168920196
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1986,
+        "gap": 11.108258972753879
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1986,
+        "gap": 2.562795956985802
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1986,
+        "gap": 0.8065480131301477
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1986,
+        "gap": 3.895339480747529
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1987,
+        "gap": 1.7686050776491138
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1987,
+        "gap": 4.799378562640037
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1987,
+        "gap": 8.299902316025602
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1987,
+        "gap": 11.222100630571795
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1987,
+        "gap": 2.550523291660152
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1987,
+        "gap": 0.8499534837502322
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1987,
+        "gap": 4.071815211374394
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1988,
+        "gap": 1.8023317982020428
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1988,
+        "gap": 4.743043467576118
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1988,
+        "gap": 8.452727160617066
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1988,
+        "gap": 11.328873426284606
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1988,
+        "gap": 2.5359825930398507
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1988,
+        "gap": 0.8954477178404833
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1988,
+        "gap": 4.255062262132996
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1989,
+        "gap": 1.8360042542814856
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1989,
+        "gap": 4.67950040385651
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1989,
+        "gap": 8.601325120267465
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1989,
+        "gap": 11.427306296063696
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1989,
+        "gap": 2.516804998085849
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1989,
+        "gap": 0.942993563853116
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1989,
+        "gap": 4.44441064824508
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1990,
+        "gap": 1.8768654656083497
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1990,
+        "gap": 4.609431065093437
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1990,
+        "gap": 8.746326641696555
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1990,
+        "gap": 11.518090713746638
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1990,
+        "gap": 2.4949134228553014
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1990,
+        "gap": 0.992562063608173
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1990,
+        "gap": 4.63957274021357
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1991,
+        "gap": 1.907503744002896
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1991,
+        "gap": 4.531155861666669
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1991,
+        "gap": 8.885997533255809
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1991,
+        "gap": 11.412583526103404
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1991,
+        "gap": 2.470863313376398
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1991,
+        "gap": 1.0442014395965442
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1991,
+        "gap": 4.835570060238044
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1992,
+        "gap": 1.9368916777395775
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1992,
+        "gap": 4.4457176913215335
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1992,
+        "gap": 9.020291746520083
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1992,
+        "gap": 11.490602540998688
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1992,
+        "gap": 2.4454765512138508
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1992,
+        "gap": 1.098125597446057
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1992,
+        "gap": 5.0320199139112685
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1993,
+        "gap": 1.9647395559660965
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1993,
+        "gap": 4.353304759843928
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1993,
+        "gap": 9.149792033535855
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1993,
+        "gap": 11.74027258508891
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1993,
+        "gap": 2.416603052323751
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1993,
+        "gap": 1.1543428374053772
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1993,
+        "gap": 5.229337819327926
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1994,
+        "gap": 1.9912976581881452
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1994,
+        "gap": 4.254958400896816
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1994,
+        "gap": 9.274848818954974
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1994,
+        "gap": 11.79980078147574
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1994,
+        "gap": 2.3846769620979025
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1994,
+        "gap": 1.212726202260411
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1994,
+        "gap": 5.4284521489685655
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1995,
+        "gap": 2.0165380306522698
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1995,
+        "gap": 4.151533176787426
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1995,
+        "gap": 9.396381729738703
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1995,
+        "gap": 11.85378288537669
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1995,
+        "gap": 2.3503969694352485
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1995,
+        "gap": 1.2734766899491796
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1995,
+        "gap": 5.630042780261645
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1996,
+        "gap": 2.0405281336262338
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1996,
+        "gap": 4.043208070306049
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1996,
+        "gap": 9.513848048985356
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1996,
+        "gap": 11.900854582424069
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1996,
+        "gap": 2.3119132839257475
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1996,
+        "gap": 1.3367002417993485
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1996,
+        "gap": 5.833458003719263
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1997,
+        "gap": 2.0633092715688166
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1997,
+        "gap": 3.929933016308798
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1997,
+        "gap": 9.627790762722258
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1997,
+        "gap": 11.940896700459783
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1997,
+        "gap": 2.2685336766011517
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1997,
+        "gap": 1.4024438420974337
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1997,
+        "gap": 6.040019539729027
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1998,
+        "gap": 2.085157230655396
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1998,
+        "gap": 3.812056204125433
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1998,
+        "gap": 9.737951616556222
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1998,
+        "gap": 11.974721325545161
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1998,
+        "gap": 2.220660181608803
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1998,
+        "gap": 1.4708428676696335
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1998,
+        "gap": 6.2498867526410615
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 1999,
+        "gap": 2.105829929942682
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 1999,
+        "gap": 3.6901807696649325
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 1999,
+        "gap": 9.844684387134489
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 1999,
+        "gap": 12.001735613145819
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 1999,
+        "gap": 2.168409727610097
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 1999,
+        "gap": 1.5419985363331061
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1999,
+        "gap": 6.463314844985893
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2000,
+        "gap": 2.125272330449353
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2000,
+        "gap": 3.5648719743988
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2000,
+        "gap": 9.946162721115147
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2000,
+        "gap": 12.022087611764972
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2000,
+        "gap": 2.1109958568088985
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2000,
+        "gap": 1.6157491494845981
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2000,
+        "gap": 6.681308482853712
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2001,
+        "gap": 2.1441531739973794
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2001,
+        "gap": 3.43630279556273
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2001,
+        "gap": 10.042802213022878
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2001,
+        "gap": 12.037013647272225
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2001,
+        "gap": 2.0503365513000986
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2001,
+        "gap": 1.692641785895129
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2001,
+        "gap": 6.903856032436186
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2002,
+        "gap": 2.1621604158587333
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2002,
+        "gap": 3.3043147670167716
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2002,
+        "gap": 10.134849120608305
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2002,
+        "gap": 12.047151009433547
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2002,
+        "gap": 1.9856428904627528
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2002,
+        "gap": 1.7726764626576226
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2002,
+        "gap": 7.1304389863540205
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2003,
+        "gap": 2.178605041212136
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2003,
+        "gap": 3.168467833456834
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2003,
+        "gap": 10.221580273842578
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2003,
+        "gap": 12.050772344089097
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2003,
+        "gap": 1.9187055375157023
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2003,
+        "gap": 1.8556641927404927
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2003,
+        "gap": 7.361170644289949
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2004,
+        "gap": 2.1930274116582913
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2004,
+        "gap": 3.02908586707483
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2004,
+        "gap": 10.3027013243483
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2004,
+        "gap": 12.046605789665069
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2004,
+        "gap": 1.8478464212585486
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2004,
+        "gap": 1.941461377815264
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2004,
+        "gap": 7.595630435921207
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2005,
+        "gap": 2.204884357882361
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2005,
+        "gap": 2.885599125926287
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2005,
+        "gap": 10.37861533759731
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2005,
+        "gap": 12.034806229793933
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2005,
+        "gap": 1.7746069995352514
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2005,
+        "gap": 2.0302712623676054
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2005,
+        "gap": 7.833354163902473
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2006,
+        "gap": 2.214220394774622
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2006,
+        "gap": 2.738309852857821
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2006,
+        "gap": 10.449573341323449
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2006,
+        "gap": 12.016444711339528
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2006,
+        "gap": 1.7003780288561998
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2006,
+        "gap": 2.121818830242913
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2006,
+        "gap": 8.073623849850724
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2007,
+        "gap": 2.2205442122841577
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2007,
+        "gap": 2.58754739775895
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2007,
+        "gap": 10.515216182520849
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2007,
+        "gap": 11.992608279661162
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2007,
+        "gap": 1.6234101906137468
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2007,
+        "gap": 2.2159055927342974
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2007,
+        "gap": 8.316901153963016
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2008,
+        "gap": 2.2231575386966256
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2008,
+        "gap": 2.4326106466537603
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2008,
+        "gap": 10.574505377622014
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2008,
+        "gap": 11.962930757780935
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2008,
+        "gap": 1.5442905627810006
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2008,
+        "gap": 2.3128093756224373
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2008,
+        "gap": 8.562361539499143
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2009,
+        "gap": 2.221925197403749
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2009,
+        "gap": 2.27394568758476
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2009,
+        "gap": 10.62732720874805
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2009,
+        "gap": 11.925040977470509
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2009,
+        "gap": 1.4639334084124016
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2009,
+        "gap": 2.4125251132299996
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2009,
+        "gap": 8.809009337454022
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2010,
+        "gap": 2.2165040830931053
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2010,
+        "gap": 2.110985468350915
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2010,
+        "gap": 10.673506377582882
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2010,
+        "gap": 11.879797656216478
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2010,
+        "gap": 1.381303785449301
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2010,
+        "gap": 2.514792720243103
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2010,
+        "gap": 9.057209710152655
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2011,
+        "gap": 2.2067003585474296
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2011,
+        "gap": 1.9440243662521581
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2011,
+        "gap": 10.714004779582233
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2011,
+        "gap": 11.828294119086916
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2011,
+        "gap": 1.2977479839429975
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2011,
+        "gap": 2.619787328814123
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2011,
+        "gap": 9.306569271291725
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2012,
+        "gap": 2.1923633282568
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2012,
+        "gap": 1.7732449090038784
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2012,
+        "gap": 10.74750061108432
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2012,
+        "gap": 11.769644052827367
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2012,
+        "gap": 1.2109875687042972
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2012,
+        "gap": 2.72708528753404
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2012,
+        "gap": 9.556410165739683
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2013,
+        "gap": 2.173006505340126
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2013,
+        "gap": 1.5980018657454487
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2013,
+        "gap": 10.77309790422282
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2013,
+        "gap": 11.701367180767882
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2013,
+        "gap": 1.1215439017783986
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2013,
+        "gap": 2.83660181195967
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2013,
+        "gap": 9.80645205089823
+      },
+      {
+        "Metric": "BMI",
+        "Region": "East Asia & Pacific",
+        "Year": 2014,
+        "gap": 2.148230217892067
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Europe & Central Asia",
+        "Year": 2014,
+        "gap": 1.417590430897313
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Latin America & Caribbean",
+        "Year": 2014,
+        "gap": 10.789352147783347
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Middle East & North Africa",
+        "Year": 2014,
+        "gap": 11.622828511583364
+      },
+      {
+        "Metric": "BMI",
+        "Region": "North America",
+        "Year": 2014,
+        "gap": 1.029800553376198
+      },
+      {
+        "Metric": "BMI",
+        "Region": "South Asia",
+        "Year": 2014,
+        "gap": 2.948218240111555
+      },
+      {
+        "Metric": "BMI",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2014,
+        "gap": 10.055720492616528
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1980,
+        "gap": 4.301740428763974
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1980,
+        "gap": 6.800631795654713
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1980,
+        "gap": 2.909330913310516
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1980,
+        "gap": 0.03903528863344974
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1980,
+        "gap": 8.328020942976554
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1980,
+        "gap": 2.012110746470121
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1980,
+        "gap": 2.1956569686942906
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1981,
+        "gap": 4.330903659646832
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1981,
+        "gap": 6.901372929755798
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1981,
+        "gap": 2.977957492575623
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1981,
+        "gap": 0.05838642112448156
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1981,
+        "gap": 8.271558382594606
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1981,
+        "gap": 1.9384996115621007
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1981,
+        "gap": 2.109387435014849
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1982,
+        "gap": 4.351984793274205
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1982,
+        "gap": 6.995647978829542
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1982,
+        "gap": 3.0438132312110504
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1982,
+        "gap": 0.08851686473791176
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1982,
+        "gap": 8.186134486326
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1982,
+        "gap": 1.8664359704554272
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1982,
+        "gap": 2.023036608693488
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1983,
+        "gap": 4.367170164471219
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1983,
+        "gap": 7.083479590247364
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1983,
+        "gap": 3.1014848869183034
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1983,
+        "gap": 0.1222708982219558
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1983,
+        "gap": 8.090395015775048
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1983,
+        "gap": 1.7949963127330477
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1983,
+        "gap": 1.934715965212348
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1984,
+        "gap": 4.3771468629541275
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1984,
+        "gap": 7.163789370349587
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1984,
+        "gap": 3.150654852186399
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1984,
+        "gap": 0.16047621106240229
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1984,
+        "gap": 7.981556360552304
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1984,
+        "gap": 1.723715872082849
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1984,
+        "gap": 1.848814490179052
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1985,
+        "gap": 4.382410575492102
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1985,
+        "gap": 7.295522204448229
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1985,
+        "gap": 3.1897573943630206
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1985,
+        "gap": 0.1976403761428429
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1985,
+        "gap": 7.866380496175594
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1985,
+        "gap": 1.6580732468922257
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1985,
+        "gap": 1.7602076783711809
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1986,
+        "gap": 4.384248713387013
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1986,
+        "gap": 7.361671382603408
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1986,
+        "gap": 3.22291873554677
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1986,
+        "gap": 0.2279794071312864
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1986,
+        "gap": 7.7345307665191
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1986,
+        "gap": 1.5949240799143745
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1986,
+        "gap": 1.6700428234051934
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1987,
+        "gap": 4.386316090003792
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1987,
+        "gap": 7.424047835313008
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1987,
+        "gap": 3.2534430323645793
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1987,
+        "gap": 0.2509372382802795
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1987,
+        "gap": 7.5897366830490505
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1987,
+        "gap": 1.5316449214062757
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1987,
+        "gap": 1.5781359576142968
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1988,
+        "gap": 4.390912628281775
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1988,
+        "gap": 7.482162235750263
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1988,
+        "gap": 3.2802787933691953
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1988,
+        "gap": 0.2693033890042642
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1988,
+        "gap": 7.437598013573048
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1988,
+        "gap": 1.470166060453721
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1988,
+        "gap": 1.4906051015218615
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1989,
+        "gap": 4.398924402933613
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1989,
+        "gap": 7.535555401781121
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1989,
+        "gap": 3.30545128432464
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1989,
+        "gap": 0.2830792900926511
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1989,
+        "gap": 7.286082693056553
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1989,
+        "gap": 1.4070403356121481
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1989,
+        "gap": 1.4051948086267316
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1990,
+        "gap": 4.307148431729175
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1990,
+        "gap": 7.587870272042746
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1990,
+        "gap": 3.3308855762604495
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1990,
+        "gap": 0.2910913806058808
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1990,
+        "gap": 7.1309211004464
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1990,
+        "gap": 1.3450017006096502
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1990,
+        "gap": 1.324282593704993
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1991,
+        "gap": 4.32295995314351
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1991,
+        "gap": 7.629867715318085
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1991,
+        "gap": 3.3617729001835315
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1991,
+        "gap": 0.17125776743951704
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1991,
+        "gap": 6.969605979491249
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1991,
+        "gap": 1.2864847449841008
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1991,
+        "gap": 1.2440448198178657
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1992,
+        "gap": 4.338017548400764
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1992,
+        "gap": 7.6754788685934905
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1992,
+        "gap": 3.3949538736175846
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1992,
+        "gap": 0.1879530904547586
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1992,
+        "gap": 6.803427771344602
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1992,
+        "gap": 1.2323984667615768
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1992,
+        "gap": 1.1664191794583267
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1993,
+        "gap": 4.354260198036453
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1993,
+        "gap": 7.718062189581676
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1993,
+        "gap": 3.4372780098695586
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1993,
+        "gap": 0.34087903984505985
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1993,
+        "gap": 6.636800154936299
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1993,
+        "gap": 1.1854423608786782
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1993,
+        "gap": 1.0926290922321371
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1994,
+        "gap": 4.371561160006024
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1994,
+        "gap": 7.759820488298303
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1994,
+        "gap": 3.485809291966355
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1994,
+        "gap": 0.38676481962667
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1994,
+        "gap": 6.477711301519701
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1994,
+        "gap": 1.1415398219089745
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1994,
+        "gap": 1.0186376604108922
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1995,
+        "gap": 4.393546906521475
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1995,
+        "gap": 7.800840039625935
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1995,
+        "gap": 3.5460523316089834
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1995,
+        "gap": 0.4538737206143324
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1995,
+        "gap": 6.326590766313595
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1995,
+        "gap": 1.1028768695002
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1995,
+        "gap": 0.9445361543857516
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1996,
+        "gap": 4.414622196027551
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1996,
+        "gap": 7.843515712968454
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1996,
+        "gap": 3.6162680286426294
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1996,
+        "gap": 0.5378583095520604
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1996,
+        "gap": 6.182503766983203
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1996,
+        "gap": 1.0728667414002224
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1996,
+        "gap": 0.8731598667036629
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1997,
+        "gap": 4.4353171720088405
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1997,
+        "gap": 7.885072770405404
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1997,
+        "gap": 3.692730441693488
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1997,
+        "gap": 0.6386969091021584
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1997,
+        "gap": 6.046534175526951
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1997,
+        "gap": 1.0498000589957712
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1997,
+        "gap": 0.8019598073027048
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1998,
+        "gap": 4.452400460034109
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1998,
+        "gap": 7.932372540869512
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1998,
+        "gap": 3.775791447732896
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1998,
+        "gap": 0.7565675270336243
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1998,
+        "gap": 5.9253609786977
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1998,
+        "gap": 1.033873056725902
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1998,
+        "gap": 0.7310046692705008
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 1999,
+        "gap": 4.466495833597605
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 1999,
+        "gap": 7.981909819344494
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 1999,
+        "gap": 3.864108345838236
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 1999,
+        "gap": 0.8849067283293124
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 1999,
+        "gap": 5.81823450133235
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 1999,
+        "gap": 1.0204488850523497
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1999,
+        "gap": 0.659248053894121
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2000,
+        "gap": 4.4775520492294945
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2000,
+        "gap": 8.033610832281028
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2000,
+        "gap": 3.9518772211068836
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2000,
+        "gap": 1.026177914935463
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2000,
+        "gap": 5.722711426541146
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2000,
+        "gap": 1.0124591935725
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2000,
+        "gap": 0.5908136733392659
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2001,
+        "gap": 4.48504513062074
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2001,
+        "gap": 8.089574726588317
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2001,
+        "gap": 4.037695442379899
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2001,
+        "gap": 1.1735509107982622
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2001,
+        "gap": 5.6410470882942505
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2001,
+        "gap": 1.005228232106127
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2001,
+        "gap": 0.5244737248601901
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2002,
+        "gap": 4.487490490358876
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2002,
+        "gap": 8.150041058951462
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2002,
+        "gap": 4.120804512261692
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2002,
+        "gap": 1.322452296541769
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2002,
+        "gap": 5.573036059593051
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2002,
+        "gap": 0.9985259564833768
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2002,
+        "gap": 0.45636202624525524
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2003,
+        "gap": 4.483683227011962
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2003,
+        "gap": 8.210876080589276
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2003,
+        "gap": 4.196998437951709
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2003,
+        "gap": 1.4722556550459949
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2003,
+        "gap": 5.518291441160098
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2003,
+        "gap": 0.9903134125771764
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2003,
+        "gap": 0.3908314880603463
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2004,
+        "gap": 4.477658981994967
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2004,
+        "gap": 8.271941837972122
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2004,
+        "gap": 4.2705635705735006
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2004,
+        "gap": 1.622534586282537
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2004,
+        "gap": 5.473775021834403
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2004,
+        "gap": 0.9806908856769212
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2004,
+        "gap": 0.328576919289457
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2005,
+        "gap": 4.4702191918270024
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2005,
+        "gap": 8.331382829283157
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2005,
+        "gap": 4.341944617066545
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2005,
+        "gap": 1.7703927316397028
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2005,
+        "gap": 5.436555894015601
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2005,
+        "gap": 0.9660521127424708
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2005,
+        "gap": 0.26377312185632107
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2006,
+        "gap": 4.463200134882477
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2006,
+        "gap": 8.388363793798522
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2006,
+        "gap": 4.409648282065238
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2006,
+        "gap": 1.912918795898694
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2006,
+        "gap": 5.403475989622699
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2006,
+        "gap": 0.9532299621825011
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2006,
+        "gap": 0.19851073493177296
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2007,
+        "gap": 4.456904907322066
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2007,
+        "gap": 8.443387041458223
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2007,
+        "gap": 4.479735576303458
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2007,
+        "gap": 2.0499583660478784
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2007,
+        "gap": 5.36058087821835
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2007,
+        "gap": 0.9365135857775257
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2007,
+        "gap": 0.1330563162799301
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2008,
+        "gap": 4.456545704237726
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2008,
+        "gap": 8.492224960316097
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2008,
+        "gap": 4.548373471245213
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2008,
+        "gap": 2.180591113220089
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2008,
+        "gap": 5.30510741619905
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2008,
+        "gap": 0.919224951481624
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2008,
+        "gap": 0.06740635043167487
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2009,
+        "gap": 4.459907069848317
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2009,
+        "gap": 8.530777798855848
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2009,
+        "gap": 4.614867091513787
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2009,
+        "gap": 2.3001899533442796
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2009,
+        "gap": 5.236015356687702
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2009,
+        "gap": 0.8980272096434518
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2009,
+        "gap": 0.00010881970339937652
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2010,
+        "gap": 4.460356721357336
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2010,
+        "gap": 8.559649923834215
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2010,
+        "gap": 4.679694691055296
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2010,
+        "gap": 2.411058427185651
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2010,
+        "gap": 5.153689690223949
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2010,
+        "gap": 0.8740035049069519
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2010,
+        "gap": 0.0665288745817243
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2011,
+        "gap": 4.463432430366151
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2011,
+        "gap": 8.57826255435371
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2011,
+        "gap": 4.742027072621475
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2011,
+        "gap": 2.50936564222836
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2011,
+        "gap": 5.065829182894799
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2011,
+        "gap": 0.847962250362098
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2011,
+        "gap": 0.12949502485290054
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2012,
+        "gap": 4.462009035286094
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2012,
+        "gap": 8.598565098041824
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2012,
+        "gap": 4.800326005809456
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2012,
+        "gap": 2.6108192849327416
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2012,
+        "gap": 4.992990647576303
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2012,
+        "gap": 0.8223155591359728
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2012,
+        "gap": 0.19098410502287066
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2013,
+        "gap": 4.459968759053471
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2013,
+        "gap": 8.61584995701855
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2013,
+        "gap": 4.859007318831313
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2013,
+        "gap": 2.7087680259242113
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2013,
+        "gap": 4.921300804275852
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2013,
+        "gap": 0.7978084881276004
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2013,
+        "gap": 0.24829642372576544
+      },
+      {
+        "Metric": "BP",
+        "Region": "East Asia & Pacific",
+        "Year": 2014,
+        "gap": 4.458628456694875
+      },
+      {
+        "Metric": "BP",
+        "Region": "Europe & Central Asia",
+        "Year": 2014,
+        "gap": 8.630686003914349
+      },
+      {
+        "Metric": "BP",
+        "Region": "Latin America & Caribbean",
+        "Year": 2014,
+        "gap": 4.917862717184072
+      },
+      {
+        "Metric": "BP",
+        "Region": "Middle East & North Africa",
+        "Year": 2014,
+        "gap": 2.8044419239016136
+      },
+      {
+        "Metric": "BP",
+        "Region": "North America",
+        "Year": 2014,
+        "gap": 4.8505785486158
+      },
+      {
+        "Metric": "BP",
+        "Region": "South Asia",
+        "Year": 2014,
+        "gap": 0.7778692530646971
+      },
+      {
+        "Metric": "BP",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2014,
+        "gap": 0.3025840450886008
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1980,
+        "gap": 0.3014494683849014
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1980,
+        "gap": 0.3371508717025806
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1980,
+        "gap": 0.7371168967098383
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1980,
+        "gap": 0.8937235295284394
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1980,
+        "gap": 0.6687349142213659
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1980,
+        "gap": 0.3909073837011001
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1980,
+        "gap": 0.5118477265390089
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1981,
+        "gap": 0.2885722336643912
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1981,
+        "gap": 0.28947166134758273
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1981,
+        "gap": 0.7382800266005383
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1981,
+        "gap": 0.8697151879037914
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1981,
+        "gap": 0.6879578005946607
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1981,
+        "gap": 0.3647212865865401
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1981,
+        "gap": 0.49881463466683806
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1982,
+        "gap": 0.27567519381751904
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1982,
+        "gap": 0.2421169045389835
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1982,
+        "gap": 0.7391297780396231
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1982,
+        "gap": 0.8421939601092374
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1982,
+        "gap": 0.7067602011010443
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1982,
+        "gap": 0.33742056901240014
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1982,
+        "gap": 0.4847153542039151
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1983,
+        "gap": 0.26312532664864197
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1983,
+        "gap": 0.19501330055451227
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1983,
+        "gap": 0.7399871377272929
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1983,
+        "gap": 0.8149661355296445
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1983,
+        "gap": 0.7296169010940341
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1983,
+        "gap": 0.30966780408532024
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1983,
+        "gap": 0.4698560318280345
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1984,
+        "gap": 0.24996924174667967
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1984,
+        "gap": 0.14860837336836763
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1984,
+        "gap": 0.741802325266165
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1984,
+        "gap": 0.7871168063948257
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1984,
+        "gap": 0.7530569253449846
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1984,
+        "gap": 0.2810785089241934
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1984,
+        "gap": 0.4543215284259534
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1985,
+        "gap": 0.23568279222653388
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1985,
+        "gap": 0.10049024198395795
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1985,
+        "gap": 0.7435563776166312
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1985,
+        "gap": 0.7567427839344036
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1985,
+        "gap": 0.7796232241347649
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1985,
+        "gap": 0.25187339274502474
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1985,
+        "gap": 0.4379743612009226
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1986,
+        "gap": 0.21932872130158287
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1986,
+        "gap": 0.05366376734469913
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1986,
+        "gap": 0.7476531312927284
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1986,
+        "gap": 0.7255232758605343
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1986,
+        "gap": 0.808070015605975
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1986,
+        "gap": 0.22148263937353185
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1986,
+        "gap": 0.4209330629243766
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1987,
+        "gap": 0.2002079525880669
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1987,
+        "gap": 0.007121235372682833
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1987,
+        "gap": 0.753204904903467
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1987,
+        "gap": 0.6955382018283638
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1987,
+        "gap": 0.8387023600550361
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1987,
+        "gap": 0.19161664486852725
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1987,
+        "gap": 0.4036481862546677
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1988,
+        "gap": 0.17784781544866135
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1988,
+        "gap": 0.03884446356404503
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1988,
+        "gap": 0.7602732243476229
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1988,
+        "gap": 0.6691392308041548
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1988,
+        "gap": 0.8731135803343903
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1988,
+        "gap": 0.16146220084965268
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1988,
+        "gap": 0.3851724858300112
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1989,
+        "gap": 0.15290300462714956
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1989,
+        "gap": 0.08534863284717886
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1989,
+        "gap": 0.7689797365556119
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1989,
+        "gap": 0.6443976151671116
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1989,
+        "gap": 0.9113292497598913
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1989,
+        "gap": 0.13100732805925208
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1989,
+        "gap": 0.3652205383757825
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1990,
+        "gap": 0.179229020476531
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1990,
+        "gap": 0.1328367153896437
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1990,
+        "gap": 0.779364236761019
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1990,
+        "gap": 0.623701882694192
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1990,
+        "gap": 0.9528731241922292
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1990,
+        "gap": 0.10004880684472717
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1990,
+        "gap": 0.34375698624946116
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1991,
+        "gap": 0.14775341331140268
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1991,
+        "gap": 0.17987948658201613
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1991,
+        "gap": 0.7917287023850248
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1991,
+        "gap": 0.5950432066297253
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1991,
+        "gap": 0.9955329079188191
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1991,
+        "gap": 0.0673799254212275
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1991,
+        "gap": 0.32187129079235266
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1992,
+        "gap": 0.11416812892114692
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1992,
+        "gap": 0.22893500021133306
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1992,
+        "gap": 0.8053795517288416
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1992,
+        "gap": 0.5715865805476881
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1992,
+        "gap": 1.037853122891625
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1992,
+        "gap": 0.03325088794781017
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1992,
+        "gap": 0.300422527243037
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1993,
+        "gap": 0.07729186818636258
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1993,
+        "gap": 0.2777229896423288
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1993,
+        "gap": 0.8190581565057871
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1993,
+        "gap": 0.5572848674051443
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1993,
+        "gap": 1.079249053266345
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1993,
+        "gap": 0.0026184619645768237
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1993,
+        "gap": 0.2792371246326253
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1994,
+        "gap": 0.03793035769021991
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1994,
+        "gap": 0.3257628386108449
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1994,
+        "gap": 0.8312745444117837
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1994,
+        "gap": 0.5330734864826994
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1994,
+        "gap": 1.1187537265880199
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1994,
+        "gap": 0.04009469593676762
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1994,
+        "gap": 0.2596449128533722
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1995,
+        "gap": 0.004326898684947622
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1995,
+        "gap": 0.3720808035099834
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1995,
+        "gap": 0.8429342939215196
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1995,
+        "gap": 0.5082295109872668
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1995,
+        "gap": 1.156850658102175
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1995,
+        "gap": 0.07896481045654191
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1995,
+        "gap": 0.2403693332963357
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1996,
+        "gap": 0.048444079960777486
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1996,
+        "gap": 0.41766216220446317
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1996,
+        "gap": 0.8553310536790786
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1996,
+        "gap": 0.4826158103460507
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1996,
+        "gap": 1.1947574958325253
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1996,
+        "gap": 0.12077555976695287
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1996,
+        "gap": 0.22117819178497022
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1997,
+        "gap": 0.09392613865082122
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1997,
+        "gap": 0.46182530790628196
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1997,
+        "gap": 0.8686252473100478
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1997,
+        "gap": 0.4561938923896811
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1997,
+        "gap": 1.2288048056619347
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1997,
+        "gap": 0.16684587482096003
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1997,
+        "gap": 0.20252243071213183
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1998,
+        "gap": 0.14005961972494063
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1998,
+        "gap": 0.5067184764049557
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1998,
+        "gap": 0.8823924972037824
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1998,
+        "gap": 0.4240536561336139
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1998,
+        "gap": 1.2619986131747352
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1998,
+        "gap": 0.21710838215149764
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1998,
+        "gap": 0.1844378008799632
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 1999,
+        "gap": 0.18632838981017574
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 1999,
+        "gap": 0.5514905794302463
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 1999,
+        "gap": 0.8987078941211726
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 1999,
+        "gap": 0.39021089084065075
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 1999,
+        "gap": 1.293819040746281
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 1999,
+        "gap": 0.2676324831833252
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 1999,
+        "gap": 0.16663854038166193
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2000,
+        "gap": 0.23296796018560073
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2000,
+        "gap": 0.5966760268502096
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2000,
+        "gap": 0.91649268538601
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2000,
+        "gap": 0.35489089314175004
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2000,
+        "gap": 1.32413086935387
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2000,
+        "gap": 0.32085336078211046
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2000,
+        "gap": 0.14861091051384
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2001,
+        "gap": 0.2807755205757472
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2001,
+        "gap": 0.6434761300201162
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2001,
+        "gap": 0.9354875031086731
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2001,
+        "gap": 0.31619496097645516
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2001,
+        "gap": 1.3540773771793457
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2001,
+        "gap": 0.3747587291762553
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2001,
+        "gap": 0.13093534328809842
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2002,
+        "gap": 0.3304821841628405
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2002,
+        "gap": 0.6918684793183303
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2002,
+        "gap": 0.9577101239047163
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2002,
+        "gap": 0.2756808843860554
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2002,
+        "gap": 1.385693467112345
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2002,
+        "gap": 0.4285516705928698
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2002,
+        "gap": 0.11243484970175555
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2003,
+        "gap": 0.3820043767572914
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2003,
+        "gap": 0.7412353793874686
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2003,
+        "gap": 0.9819143642050951
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2003,
+        "gap": 0.23176611254613277
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2003,
+        "gap": 1.4181929256595645
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2003,
+        "gap": 0.4808001342711279
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2003,
+        "gap": 0.09209665398760691
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2004,
+        "gap": 0.4354952056708008
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2004,
+        "gap": 0.7917176382227149
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2004,
+        "gap": 1.0082811353790957
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2004,
+        "gap": 0.18694471085223263
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2004,
+        "gap": 1.4505844369398098
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2004,
+        "gap": 0.5299050154355847
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2004,
+        "gap": 0.07014446611506742
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2005,
+        "gap": 0.49254892760395474
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2005,
+        "gap": 0.842670493446322
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2005,
+        "gap": 1.0377919629850876
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2005,
+        "gap": 0.14523890404935358
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2005,
+        "gap": 1.4826806180996899
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2005,
+        "gap": 0.5739858904783608
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2005,
+        "gap": 0.04869145793779239
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2006,
+        "gap": 0.5520071292228819
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2006,
+        "gap": 0.8939818954096381
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2006,
+        "gap": 1.0711021852113394
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2006,
+        "gap": 0.10866297160667315
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2006,
+        "gap": 1.5136019007827697
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2006,
+        "gap": 0.6136700748401589
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2006,
+        "gap": 0.02744050020239186
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2007,
+        "gap": 0.6134999244218546
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2007,
+        "gap": 0.9468084678701043
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2007,
+        "gap": 1.1050700201930308
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2007,
+        "gap": 0.07295640291148153
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2007,
+        "gap": 1.5377439459508002
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2007,
+        "gap": 0.6480702837352901
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2007,
+        "gap": 0.007410458712118206
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2008,
+        "gap": 0.6776992548187
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2008,
+        "gap": 1.0003071729718531
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2008,
+        "gap": 1.1414798526958059
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2008,
+        "gap": 0.0373522629249301
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2008,
+        "gap": 1.5555502279947806
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2008,
+        "gap": 0.67776554446246
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2008,
+        "gap": 0.010191748785604027
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2009,
+        "gap": 0.7432451954008741
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2009,
+        "gap": 1.0510726996428446
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2009,
+        "gap": 1.1807311635010755
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2009,
+        "gap": 0.004203711965994117
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2009,
+        "gap": 1.5674241757237448
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2009,
+        "gap": 0.7025093670133895
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2009,
+        "gap": 0.02488679103101088
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2010,
+        "gap": 0.8111058486143934
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2010,
+        "gap": 1.1017056550538875
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2010,
+        "gap": 1.220742787036718
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2010,
+        "gap": 0.025420834565315076
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2010,
+        "gap": 1.573263398906656
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2010,
+        "gap": 0.7239702766344731
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2010,
+        "gap": 0.0357530189235824
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2011,
+        "gap": 0.8808158381606965
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2011,
+        "gap": 1.153515951283537
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2011,
+        "gap": 1.260722273762049
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2011,
+        "gap": 0.04982775368621972
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2011,
+        "gap": 1.5783723665658904
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2011,
+        "gap": 0.7430288343039813
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2011,
+        "gap": 0.04485595237685658
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2012,
+        "gap": 0.9492061939945398
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2012,
+        "gap": 1.2060085316940388
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2012,
+        "gap": 1.301160698604841
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2012,
+        "gap": 0.07733237529730808
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2012,
+        "gap": 1.5862737898305657
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2012,
+        "gap": 0.7624407856128297
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2012,
+        "gap": 0.05400928351806922
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2013,
+        "gap": 1.0189599021952276
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2013,
+        "gap": 1.2587747108196883
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2013,
+        "gap": 1.343309650326919
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2013,
+        "gap": 0.10465271049058167
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2013,
+        "gap": 1.594337371947626
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2013,
+        "gap": 0.7815417809854619
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2013,
+        "gap": 0.06323907511751337
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "East Asia & Pacific",
+        "Year": 2014,
+        "gap": 1.0899767385304902
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Europe & Central Asia",
+        "Year": 2014,
+        "gap": 1.3127796199426394
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Latin America & Caribbean",
+        "Year": 2014,
+        "gap": 1.38501255672017
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Middle East & North Africa",
+        "Year": 2014,
+        "gap": 0.1302634556787563
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "North America",
+        "Year": 2014,
+        "gap": 1.6007021625467335
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "South Asia",
+        "Year": 2014,
+        "gap": 0.800376654751215
+      },
+      {
+        "Metric": "Diabetes",
+        "Region": "Sub-Saharan Africa",
+        "Year": 2014,
+        "gap": 0.07220411280144834
+      }
+    ],
     "data-939372c7b1c94d7bddf9368abd2ec472": [
       {
         "BMI": 0.302607286089605,
@@ -137415,42 +142034,15 @@
   "params": [
     {
       "bind": {
-        "input": "range",
-        "max": 2016,
-        "min": 1980,
-        "name": "Year: ",
-        "step": 1
-      },
-      "name": "year_socio",
-      "select": {
-        "fields": [
-          "Year"
-        ],
-        "type": "point"
-      },
-      "value": 2014,
-      "views": [
-        "view_12fd971db5eaa487_0",
-        "view_4b56b8b418f8a5f1_0",
-        "view_f7bf9c6f1dced844_1",
-        "view_9c4fc3a30d853f1e_2",
-        "view_824be448cdb2fc33_3",
-        "view_991d59a20a4879cd_4",
-        "view_2235fce2237eb192_2",
-        "view_058a4c5b3e1b5f09_3"
-      ]
-    },
-    {
-      "bind": {
-        "input": "radio",
-        "name": "Select Metric: ",
+        "input": "select",
+        "name": "Health Metric: ",
         "options": [
           "BMI",
           "BP",
           "Diabetes"
         ]
       },
-      "name": "reg_metric_line",
+      "name": "metric_filter",
       "select": {
         "fields": [
           "Metric"
@@ -137460,46 +142052,48 @@
       "value": "BMI",
       "views": [
         "view_12fd971db5eaa487_0",
-        "view_4b56b8b418f8a5f1_0",
-        "view_f7bf9c6f1dced844_1",
-        "view_9c4fc3a30d853f1e_2",
-        "view_824be448cdb2fc33_3",
-        "view_991d59a20a4879cd_4",
-        "view_2235fce2237eb192_2",
-        "view_058a4c5b3e1b5f09_3"
+        "view_96ec6f07f4b80463_0",
+        "view_25549f58c84f089a_1",
+        "view_a4baedfd408ae17b_2",
+        "view_b12c6bdaa7658137_3",
+        "view_55d8aeb573991e0d_4",
+        "view_0976960d3fbef9c6_0",
+        "view_c9fef4a26643d490_1",
+        "view_d92cbebfd5ce081e_0",
+        "view_fb2f03ceb93c8e5b_0"
       ]
     },
     {
       "bind": {
-        "input": "radio",
-        "name": "Select Metric: ",
-        "options": [
-          "BMI",
-          "BP",
-          "Diabetes"
-        ]
+        "input": "range",
+        "max": 2016,
+        "min": 1980,
+        "name": "Year: ",
+        "step": 1
       },
-      "name": "reg_metric_bar",
+      "name": "year_regional",
       "select": {
         "fields": [
-          "Metric_bar"
+          "Year"
         ],
         "type": "point"
       },
-      "value": "BMI",
+      "value": 2014,
       "views": [
         "view_12fd971db5eaa487_0",
-        "view_4b56b8b418f8a5f1_0",
-        "view_f7bf9c6f1dced844_1",
-        "view_9c4fc3a30d853f1e_2",
-        "view_824be448cdb2fc33_3",
-        "view_991d59a20a4879cd_4",
-        "view_2235fce2237eb192_2",
-        "view_058a4c5b3e1b5f09_3"
+        "view_96ec6f07f4b80463_0",
+        "view_25549f58c84f089a_1",
+        "view_a4baedfd408ae17b_2",
+        "view_b12c6bdaa7658137_3",
+        "view_55d8aeb573991e0d_4",
+        "view_0976960d3fbef9c6_0",
+        "view_c9fef4a26643d490_1",
+        "view_d92cbebfd5ce081e_0",
+        "view_fb2f03ceb93c8e5b_0"
       ]
     }
   ],
-  "spacing": 60,
+  "spacing": 50,
   "vconcat": [
     {
       "data": {
@@ -137523,327 +142117,30 @@
       "width": 1100
     },
     {
-      "data": {
-        "name": "data-939372c7b1c94d7bddf9368abd2ec472"
-      },
       "hconcat": [
         {
+          "data": {
+            "name": "data-939372c7b1c94d7bddf9368abd2ec472"
+          },
           "encoding": {
             "text": {
-              "field": "display_text",
+              "field": "Region",
               "type": "nominal"
             }
           },
-          "height": 160,
+          "height": 100,
           "mark": {
-            "align": "center",
-            "baseline": "middle",
             "color": "#FF4D4D",
-            "fontSize": 15,
+            "fontSize": 20,
             "fontWeight": "bold",
-            "lineBreak": "\n",
             "type": "text"
           },
-          "name": "view_4b56b8b418f8a5f1_0",
-          "title": {
-            "anchor": "middle",
-            "color": "white",
-            "fontSize": 20,
-            "text": "Highest Risk"
-          },
+          "name": "view_96ec6f07f4b80463_0",
+          "title": "Highest Risk Region",
           "transform": [
             {
               "filter": {
-                "param": "year_socio"
-              }
-            },
-            {
-              "as": [
-                "Metric",
-                "Prevalence"
-              ],
-              "fold": [
-                "BMI",
-                "BP",
-                "Diabetes"
-              ]
-            },
-            {
-              "filter": {
-                "param": "reg_metric_line"
-              }
-            },
-            {
-              "aggregate": [
-                {
-                  "as": "avg_prev",
-                  "field": "Prevalence",
-                  "op": "mean"
-                }
-              ],
-              "groupby": [
-                "Region",
-                "Metric"
-              ]
-            },
-            {
-              "sort": [
-                {
-                  "field": "avg_prev",
-                  "order": "descending"
-                }
-              ],
-              "window": [
-                {
-                  "as": "rank",
-                  "field": "",
-                  "op": "rank"
-                }
-              ]
-            },
-            {
-              "filter": "datum.rank == 1"
-            },
-            {
-              "as": "display_text",
-              "calculate": "datum.Region + '\\n(' + format(datum.avg_prev, '.1f') + '%)'"
-            }
-          ],
-          "width": 215
-        },
-        {
-          "encoding": {
-            "text": {
-              "field": "display_text",
-              "type": "nominal"
-            }
-          },
-          "height": 160,
-          "mark": {
-            "align": "center",
-            "baseline": "middle",
-            "color": "#00FF9F",
-            "fontSize": 15,
-            "fontWeight": "bold",
-            "lineBreak": "\n",
-            "type": "text"
-          },
-          "name": "view_f7bf9c6f1dced844_1",
-          "title": {
-            "anchor": "middle",
-            "color": "white",
-            "fontSize": 20,
-            "text": "Lowest Risk"
-          },
-          "transform": [
-            {
-              "filter": {
-                "param": "year_socio"
-              }
-            },
-            {
-              "as": [
-                "Metric",
-                "Prevalence"
-              ],
-              "fold": [
-                "BMI",
-                "BP",
-                "Diabetes"
-              ]
-            },
-            {
-              "filter": {
-                "param": "reg_metric_line"
-              }
-            },
-            {
-              "aggregate": [
-                {
-                  "as": "avg_prev",
-                  "field": "Prevalence",
-                  "op": "mean"
-                }
-              ],
-              "groupby": [
-                "Region",
-                "Metric"
-              ]
-            },
-            {
-              "sort": [
-                {
-                  "field": "avg_prev",
-                  "order": "ascending"
-                }
-              ],
-              "window": [
-                {
-                  "as": "rank",
-                  "field": "",
-                  "op": "rank"
-                }
-              ]
-            },
-            {
-              "filter": "datum.rank == 1"
-            },
-            {
-              "as": "display_text",
-              "calculate": "datum.Region + '\\n(' + format(datum.avg_prev, '.1f') + '%)'"
-            }
-          ],
-          "width": 215
-        },
-        {
-          "encoding": {
-            "text": {
-              "field": "display_text",
-              "type": "nominal"
-            }
-          },
-          "height": 160,
-          "mark": {
-            "align": "center",
-            "baseline": "middle",
-            "color": "#B026FF",
-            "fontSize": 15,
-            "fontWeight": "bold",
-            "lineBreak": "\n",
-            "type": "text"
-          },
-          "name": "view_9c4fc3a30d853f1e_2",
-          "title": {
-            "anchor": "middle",
-            "color": "white",
-            "fontSize": 20,
-            "text": "Fastest Growth"
-          },
-          "transform": [
-            {
-              "as": [
-                "Metric",
-                "Prevalence"
-              ],
-              "fold": [
-                "BMI",
-                "BP",
-                "Diabetes"
-              ]
-            },
-            {
-              "filter": {
-                "param": "reg_metric_line"
-              }
-            },
-            {
-              "aggregate": [
-                {
-                  "as": "avg_prev",
-                  "field": "Prevalence",
-                  "op": "mean"
-                }
-              ],
-              "groupby": [
-                "Region",
-                "Year",
-                "Metric"
-              ]
-            },
-            {
-              "groupby": [
-                "Region",
-                "Metric"
-              ],
-              "sort": [
-                {
-                  "field": "Year",
-                  "order": "ascending"
-                }
-              ],
-              "window": [
-                {
-                  "as": "first_val",
-                  "field": "avg_prev",
-                  "op": "first_value"
-                },
-                {
-                  "as": "last_val",
-                  "field": "avg_prev",
-                  "op": "last_value"
-                }
-              ]
-            },
-            {
-              "as": "growth",
-              "calculate": "datum.last_val - datum.first_val"
-            },
-            {
-              "aggregate": [
-                {
-                  "as": "max_growth",
-                  "field": "growth",
-                  "op": "max"
-                }
-              ],
-              "groupby": [
-                "Region",
-                "Metric"
-              ]
-            },
-            {
-              "sort": [
-                {
-                  "field": "max_growth",
-                  "order": "descending"
-                }
-              ],
-              "window": [
-                {
-                  "as": "rank",
-                  "field": "",
-                  "op": "rank"
-                }
-              ]
-            },
-            {
-              "filter": "datum.rank == 1"
-            },
-            {
-              "as": "display_text",
-              "calculate": "datum.Region + '\\n(+' + format(datum.max_growth, '.1f') + 'pp)'"
-            }
-          ],
-          "width": 215
-        },
-        {
-          "encoding": {
-            "text": {
-              "field": "display_text",
-              "type": "nominal"
-            }
-          },
-          "height": 160,
-          "mark": {
-            "align": "center",
-            "baseline": "middle",
-            "color": "#00D4FF",
-            "fontSize": 15,
-            "fontWeight": "bold",
-            "lineBreak": "\n",
-            "type": "text"
-          },
-          "name": "view_824be448cdb2fc33_3",
-          "title": {
-            "anchor": "middle",
-            "color": "white",
-            "fontSize": 20,
-            "text": "Largest Gender Gap"
-          },
-          "transform": [
-            {
-              "filter": {
-                "param": "year_socio"
+                "param": "year_regional"
               }
             },
             {
@@ -137868,7 +142165,7 @@
             },
             {
               "filter": {
-                "param": "reg_metric_line"
+                "param": "metric_filter"
               }
             },
             {
@@ -137880,32 +142177,238 @@
                 }
               ],
               "groupby": [
-                "Region",
-                "Gender",
-                "Metric"
+                "Region"
               ]
             },
             {
-              "groupby": [
-                "Region",
-                "Metric"
+              "sort": [
+                {
+                  "field": "avg_prev",
+                  "order": "descending"
+                }
               ],
               "window": [
                 {
-                  "as": "male_val",
-                  "field": "avg_prev",
-                  "op": "max"
-                },
-                {
-                  "as": "female_val",
-                  "field": "avg_prev",
-                  "op": "min"
+                  "as": "rank",
+                  "field": "",
+                  "op": "rank"
                 }
               ]
             },
             {
-              "as": "gap",
-              "calculate": "abs(datum.male_val - datum.female_val)"
+              "filter": "datum.rank == 1"
+            }
+          ],
+          "width": 210
+        },
+        {
+          "data": {
+            "name": "data-939372c7b1c94d7bddf9368abd2ec472"
+          },
+          "encoding": {
+            "text": {
+              "field": "Region",
+              "type": "nominal"
+            }
+          },
+          "height": 100,
+          "mark": {
+            "color": "#00FF9F",
+            "fontSize": 20,
+            "fontWeight": "bold",
+            "type": "text"
+          },
+          "name": "view_25549f58c84f089a_1",
+          "title": "Lowest Risk Region",
+          "transform": [
+            {
+              "filter": {
+                "param": "year_regional"
+              }
+            },
+            {
+              "filter": {
+                "field": "Gender",
+                "oneOf": [
+                  "Men",
+                  "Women"
+                ]
+              }
+            },
+            {
+              "as": [
+                "Metric",
+                "Prevalence"
+              ],
+              "fold": [
+                "BMI",
+                "BP",
+                "Diabetes"
+              ]
+            },
+            {
+              "filter": {
+                "param": "metric_filter"
+              }
+            },
+            {
+              "aggregate": [
+                {
+                  "as": "avg_prev",
+                  "field": "Prevalence",
+                  "op": "mean"
+                }
+              ],
+              "groupby": [
+                "Region"
+              ]
+            },
+            {
+              "sort": [
+                {
+                  "field": "avg_prev",
+                  "order": "ascending"
+                }
+              ],
+              "window": [
+                {
+                  "as": "rank",
+                  "field": "",
+                  "op": "rank"
+                }
+              ]
+            },
+            {
+              "filter": "datum.rank == 1"
+            }
+          ],
+          "width": 210
+        },
+        {
+          "data": {
+            "name": "data-3ac923e5785cd9d6ff426aa71de8f3ec"
+          },
+          "encoding": {
+            "text": {
+              "field": "Region",
+              "type": "nominal"
+            }
+          },
+          "height": 100,
+          "mark": {
+            "color": "#FFAC1C",
+            "fontSize": 20,
+            "fontWeight": "bold",
+            "type": "text"
+          },
+          "name": "view_a4baedfd408ae17b_2",
+          "title": "Fastest Growing Risk",
+          "transform": [
+            {
+              "filter": {
+                "param": "metric_filter"
+              }
+            },
+            {
+              "sort": [
+                {
+                  "field": "growth",
+                  "order": "descending"
+                }
+              ],
+              "window": [
+                {
+                  "as": "rank",
+                  "field": "",
+                  "op": "rank"
+                }
+              ]
+            },
+            {
+              "filter": "datum.rank == 1"
+            }
+          ],
+          "width": 210
+        },
+        {
+          "data": {
+            "name": "data-3ac923e5785cd9d6ff426aa71de8f3ec"
+          },
+          "encoding": {
+            "text": {
+              "field": "Region",
+              "type": "nominal"
+            }
+          },
+          "height": 100,
+          "mark": {
+            "color": "#B026FF",
+            "fontSize": 20,
+            "fontWeight": "bold",
+            "type": "text"
+          },
+          "name": "view_b12c6bdaa7658137_3",
+          "title": "Most Stable / Improved",
+          "transform": [
+            {
+              "filter": {
+                "param": "metric_filter"
+              }
+            },
+            {
+              "as": "abs_growth",
+              "calculate": "abs(datum.growth)"
+            },
+            {
+              "sort": [
+                {
+                  "field": "abs_growth",
+                  "order": "ascending"
+                }
+              ],
+              "window": [
+                {
+                  "as": "rank",
+                  "field": "",
+                  "op": "rank"
+                }
+              ]
+            },
+            {
+              "filter": "datum.rank == 1"
+            }
+          ],
+          "width": 210
+        },
+        {
+          "data": {
+            "name": "data-753b75e662d12f95c80e32bcec317c59"
+          },
+          "encoding": {
+            "text": {
+              "field": "Region",
+              "type": "nominal"
+            }
+          },
+          "height": 100,
+          "mark": {
+            "color": "#00D4FF",
+            "fontSize": 20,
+            "fontWeight": "bold",
+            "type": "text"
+          },
+          "name": "view_55d8aeb573991e0d_4",
+          "title": "Biggest Gender Gap",
+          "transform": [
+            {
+              "filter": {
+                "param": "year_regional"
+              }
+            },
+            {
+              "filter": {
+                "param": "metric_filter"
+              }
             },
             {
               "sort": [
@@ -137924,39 +142427,81 @@
             },
             {
               "filter": "datum.rank == 1"
-            },
-            {
-              "as": "display_text",
-              "calculate": "datum.Region + '\\n(' + format(datum.gap, '.1f') + 'pp Diff)'"
             }
           ],
-          "width": 215
-        },
+          "width": 210
+        }
+      ],
+      "resolve": {
+        "scale": {
+          "color": "independent"
+        }
+      }
+    },
+    {
+      "data": {
+        "name": "data-939372c7b1c94d7bddf9368abd2ec472"
+      },
+      "hconcat": [
         {
           "encoding": {
-            "text": {
-              "field": "display_text",
+            "color": {
+              "field": "Region",
+              "legend": {
+                "title": "Region"
+              },
               "type": "nominal"
+            },
+            "tooltip": [
+              {
+                "field": "Region",
+                "type": "nominal"
+              },
+              {
+                "field": "Year",
+                "type": "ordinal"
+              },
+              {
+                "aggregate": "mean",
+                "field": "Prevalence",
+                "format": ".1f",
+                "title": "Mean (%)",
+                "type": "quantitative"
+              }
+            ],
+            "x": {
+              "field": "Year",
+              "title": "Year",
+              "type": "ordinal"
+            },
+            "y": {
+              "aggregate": "mean",
+              "field": "Prevalence",
+              "scale": {
+                "zero": false
+              },
+              "title": "Mean Prevalence (%)",
+              "type": "quantitative"
             }
           },
-          "height": 160,
+          "height": 320,
           "mark": {
-            "align": "center",
-            "baseline": "middle",
-            "color": "#00D4FF",
-            "fontSize": 15,
-            "fontWeight": "bold",
-            "lineBreak": "\n",
-            "type": "text"
+            "point": true,
+            "strokeWidth": 2.5,
+            "type": "line"
           },
-          "name": "view_991d59a20a4879cd_4",
-          "title": {
-            "anchor": "middle",
-            "color": "white",
-            "fontSize": 20,
-            "text": "Most Stable"
-          },
+          "name": "view_0976960d3fbef9c6_0",
+          "title": "Health Risk Trends by Region Over Time",
           "transform": [
+            {
+              "filter": {
+                "field": "Gender",
+                "oneOf": [
+                  "Men",
+                  "Women"
+                ]
+              }
+            },
             {
               "as": [
                 "Metric",
@@ -137970,79 +142515,101 @@
             },
             {
               "filter": {
-                "param": "reg_metric_line"
+                "param": "metric_filter"
+              }
+            }
+          ],
+          "width": 520
+        },
+        {
+          "encoding": {
+            "color": {
+              "field": "Metric",
+              "scale": {
+                "domain": [
+                  "BMI",
+                  "BP",
+                  "Diabetes"
+                ],
+                "range": [
+                  "#00FF9F",
+                  "#00D4FF",
+                  "#FF4D4D"
+                ]
+              },
+              "type": "nominal"
+            },
+            "tooltip": [
+              {
+                "field": "Region",
+                "type": "nominal"
+              },
+              {
+                "field": "Metric",
+                "type": "nominal"
+              },
+              {
+                "aggregate": "mean",
+                "field": "Prevalence",
+                "format": ".1f",
+                "title": "Mean (%)",
+                "type": "quantitative"
+              }
+            ],
+            "x": {
+              "field": "Region",
+              "title": "Region",
+              "type": "nominal"
+            },
+            "xOffset": {
+              "field": "Metric",
+              "type": "nominal"
+            },
+            "y": {
+              "aggregate": "mean",
+              "field": "Prevalence",
+              "scale": {
+                "zero": false
+              },
+              "title": "Mean Prevalence (%)",
+              "type": "quantitative"
+            }
+          },
+          "height": 320,
+          "mark": {
+            "opacity": 0.85,
+            "type": "bar"
+          },
+          "name": "view_c9fef4a26643d490_1",
+          "title": "Health Metrics by Region (Selected Year)",
+          "transform": [
+            {
+              "filter": {
+                "param": "year_regional"
               }
             },
             {
-              "aggregate": [
-                {
-                  "as": "avg_prev",
-                  "field": "Prevalence",
-                  "op": "mean"
-                }
+              "filter": {
+                "field": "Gender",
+                "oneOf": [
+                  "Men",
+                  "Women"
+                ]
+              }
+            },
+            {
+              "as": [
+                "Metric",
+                "Prevalence"
               ],
-              "groupby": [
-                "Region",
-                "Year",
-                "Metric"
+              "fold": [
+                "BMI",
+                "BP",
+                "Diabetes"
               ]
-            },
-            {
-              "groupby": [
-                "Region",
-                "Metric"
-              ],
-              "sort": [
-                {
-                  "field": "Year",
-                  "order": "ascending"
-                }
-              ],
-              "window": [
-                {
-                  "as": "first_val",
-                  "field": "avg_prev",
-                  "op": "first_value"
-                },
-                {
-                  "as": "last_val",
-                  "field": "avg_prev",
-                  "op": "last_value"
-                }
-              ]
-            },
-            {
-              "as": "growth",
-              "calculate": "datum.last_val - datum.first_val"
-            },
-            {
-              "sort": [
-                {
-                  "field": "growth",
-                  "order": "ascending"
-                },
-                {
-                  "field": "Region",
-                  "order": "ascending"
-                }
-              ],
-              "window": [
-                {
-                  "as": "rank",
-                  "field": "",
-                  "op": "row_number"
-                }
-              ]
-            },
-            {
-              "filter": "datum.rank == 1"
-            },
-            {
-              "as": "display_text",
-              "calculate": "datum.Region + '\\n(+' + format(datum.growth, '.1f') + 'pp)'"
             }
           ],
-          "width": 215
+          "width": 520
         }
       ],
       "resolve": {
@@ -138055,188 +142622,271 @@
       "data": {
         "name": "data-939372c7b1c94d7bddf9368abd2ec472"
       },
-      "encoding": {
-        "color": {
-          "field": "Region",
-          "scale": {
-            "scheme": "tableau10"
-          },
-          "type": "nominal"
-        },
-        "detail": {
-          "field": "Region",
-          "type": "nominal"
-        },
-        "tooltip": [
-          {
-            "field": "Region",
-            "type": "nominal"
-          },
-          {
-            "field": "Year",
-            "format": "d",
-            "type": "quantitative"
-          },
-          {
-            "aggregate": "mean",
-            "field": "Prevalence",
-            "format": ".1f",
-            "title": "Avg %",
-            "type": "quantitative"
-          }
-        ],
-        "x": {
-          "axis": {
-            "format": "d",
-            "grid": false
-          },
-          "field": "Year",
-          "title": "Year",
-          "type": "quantitative"
-        },
-        "y": {
-          "aggregate": "mean",
-          "field": "Prevalence",
-          "scale": {
-            "zero": false
-          },
-          "title": "Mean Prevalence (%)",
-          "type": "quantitative"
-        }
-      },
-      "height": 350,
-      "mark": {
-        "interpolate": "monotone",
-        "point": true,
-        "strokeWidth": 3,
-        "type": "line"
-      },
-      "name": "view_2235fce2237eb192_2",
-      "title": "Global Velocity: Regional Risk Evolution",
-      "transform": [
+      "hconcat": [
         {
-          "as": [
-            "Metric",
-            "Prevalence"
-          ],
-          "fold": [
-            "BMI",
-            "BP",
-            "Diabetes"
-          ]
-        },
-        {
-          "filter": {
-            "param": "reg_metric_line"
-          }
-        }
-      ],
-      "width": 1000
-    },
-    {
-      "data": {
-        "name": "data-939372c7b1c94d7bddf9368abd2ec472"
-      },
-      "encoding": {
-        "color": {
-          "field": "Metric_bar",
-          "legend": {
-            "orient": "top",
-            "title": "Health Indicator"
-          },
-          "scale": {
-            "domain": [
-              "BMI",
-              "BP",
-              "Diabetes"
+          "encoding": {
+            "color": {
+              "field": "Region",
+              "type": "nominal"
+            },
+            "tooltip": [
+              {
+                "field": "Region",
+                "type": "nominal"
+              },
+              {
+                "field": "Year",
+                "type": "ordinal"
+              },
+              {
+                "field": "share",
+                "format": ".1f",
+                "title": "Share (%)",
+                "type": "quantitative"
+              }
             ],
-            "range": [
-              "#FF4D4D",
-              "#00FF9F",
-              "#B026FF"
-            ]
+            "x": {
+              "field": "Year",
+              "title": "Year",
+              "type": "ordinal"
+            },
+            "y": {
+              "axis": {
+                "format": "%"
+              },
+              "field": "share",
+              "stack": "normalize",
+              "title": "Prevalence Share (%)",
+              "type": "quantitative"
+            }
           },
-          "type": "nominal"
-        },
-        "tooltip": [
-          {
-            "field": "Region",
-            "type": "nominal"
+          "height": 320,
+          "mark": {
+            "type": "bar"
           },
-          {
-            "field": "Metric_bar",
-            "type": "nominal"
-          },
-          {
-            "aggregate": "mean",
-            "field": "Prevalence_bar",
-            "format": ".1f",
-            "title": "Avg Prevalence %",
-            "type": "quantitative"
-          }
-        ],
-        "x": {
-          "axis": {
-            "labelAngle": -45,
-            "labelColor": "white"
-          },
-          "field": "Region",
-          "title": null,
-          "type": "nominal"
-        },
-        "xOffset": {
-          "field": "Metric_bar",
-          "type": "nominal"
-        },
-        "y": {
-          "aggregate": "mean",
-          "field": "Prevalence_bar",
-          "stack": null,
-          "title": "Mean Prevalence (%)",
-          "type": "quantitative"
-        }
-      },
-      "height": 400,
-      "mark": {
-        "cornerRadiusTopLeft": 3,
-        "cornerRadiusTopRight": 3,
-        "type": "bar"
-      },
-      "name": "view_058a4c5b3e1b5f09_3",
-      "title": {
-        "anchor": "middle",
-        "color": "white",
-        "fontSize": 22,
-        "subtitle": "Comparing the relative prevalence of BMI, Blood Pressure, and Diabetes",
-        "text": "Regional Health Dominance Comparison"
-      },
-      "transform": [
-        {
-          "filter": {
-            "param": "year_socio"
-          }
-        },
-        {
-          "as": [
-            "Metric_bar",
-            "Prevalence_bar"
+          "name": "view_d92cbebfd5ce081e_0",
+          "title": "Regional Risk Share of Global Prevalence",
+          "transform": [
+            {
+              "filter": {
+                "field": "Gender",
+                "oneOf": [
+                  "Men",
+                  "Women"
+                ]
+              }
+            },
+            {
+              "as": [
+                "Metric",
+                "Prevalence"
+              ],
+              "fold": [
+                "BMI",
+                "BP",
+                "Diabetes"
+              ]
+            },
+            {
+              "filter": {
+                "param": "metric_filter"
+              }
+            },
+            {
+              "aggregate": [
+                {
+                  "as": "total_prev",
+                  "field": "Prevalence",
+                  "op": "sum"
+                }
+              ],
+              "groupby": [
+                "Year",
+                "Region"
+              ]
+            },
+            {
+              "groupby": [
+                "Year"
+              ],
+              "joinaggregate": [
+                {
+                  "as": "global_total",
+                  "field": "total_prev",
+                  "op": "sum"
+                }
+              ]
+            },
+            {
+              "as": "share",
+              "calculate": "datum.total_prev / datum.global_total * 100"
+            }
           ],
-          "fold": [
-            "BMI",
-            "BP",
-            "Diabetes"
-          ]
+          "width": 520
         },
         {
-          "filter": {
-            "param": "reg_metric_bar"
-          }
+          "height": 320,
+          "layer": [
+            {
+              "encoding": {
+                "tooltip": [
+                  {
+                    "field": "Region",
+                    "type": "nominal"
+                  },
+                  {
+                    "aggregate": "mean",
+                    "field": "Urban_Population",
+                    "format": ".1f",
+                    "title": "Urbanisation (%)",
+                    "type": "quantitative"
+                  }
+                ],
+                "x": {
+                  "field": "Region",
+                  "title": "Region",
+                  "type": "nominal"
+                },
+                "y": {
+                  "aggregate": "mean",
+                  "field": "Urban_Population",
+                  "title": "Avg Urbanisation (%)",
+                  "type": "quantitative"
+                }
+              },
+              "mark": {
+                "color": "#B026FF",
+                "opacity": 0.6,
+                "type": "bar"
+              },
+              "name": "view_fb2f03ceb93c8e5b_0",
+              "transform": [
+                {
+                  "filter": {
+                    "param": "year_regional"
+                  }
+                },
+                {
+                  "filter": {
+                    "field": "Gender",
+                    "oneOf": [
+                      "Men",
+                      "Women"
+                    ]
+                  }
+                },
+                {
+                  "as": [
+                    "Metric",
+                    "Prevalence"
+                  ],
+                  "fold": [
+                    "BMI",
+                    "BP",
+                    "Diabetes"
+                  ]
+                },
+                {
+                  "filter": {
+                    "param": "metric_filter"
+                  }
+                }
+              ]
+            },
+            {
+              "encoding": {
+                "tooltip": [
+                  {
+                    "field": "Region",
+                    "type": "nominal"
+                  },
+                  {
+                    "aggregate": "mean",
+                    "field": "Prevalence",
+                    "format": ".1f",
+                    "title": "Prevalence (%)",
+                    "type": "quantitative"
+                  }
+                ],
+                "x": {
+                  "field": "Region",
+                  "title": "Region",
+                  "type": "nominal"
+                },
+                "y": {
+                  "aggregate": "mean",
+                  "field": "Prevalence",
+                  "scale": {
+                    "zero": false
+                  },
+                  "title": "Mean Prevalence (%)",
+                  "type": "quantitative"
+                }
+              },
+              "mark": {
+                "color": "#00FF9F",
+                "point": {
+                  "color": "#00FF9F",
+                  "size": 60
+                },
+                "strokeWidth": 3,
+                "type": "line"
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "param": "year_regional"
+                  }
+                },
+                {
+                  "filter": {
+                    "field": "Gender",
+                    "oneOf": [
+                      "Men",
+                      "Women"
+                    ]
+                  }
+                },
+                {
+                  "as": [
+                    "Metric",
+                    "Prevalence"
+                  ],
+                  "fold": [
+                    "BMI",
+                    "BP",
+                    "Diabetes"
+                  ]
+                },
+                {
+                  "filter": {
+                    "param": "metric_filter"
+                  }
+                }
+              ]
+            }
+          ],
+          "resolve": {
+            "scale": {
+              "y": "independent"
+            }
+          },
+          "title": "Risk vs. Urbanisation by Region",
+          "width": 520
         }
       ],
-      "width": 1000
+      "resolve": {
+        "scale": {
+          "color": "independent"
+        }
+      }
     }
   ]
-}, { actions: false, bind: '#filters' }).catch(console.error);
+}, {
+      actions: false,
+      bind: '#filters'
+    }).catch(console.error);
   </script>
+
 </body>
 </html>

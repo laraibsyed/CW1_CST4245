@@ -43,13 +43,25 @@
       text-shadow: 0 0 8px rgba(0,212,255,0.6);
       box-shadow: inset 0 0 10px rgba(0,212,255,0.2);
     }
+    .sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #2b2b2b;
+      padding-bottom: 10px;
+    }
     .filter-box { 
       background: #3d3d3d; 
       padding: 15px 25px; 
       border-radius: 12px; 
       border: 1px solid #555;
-      margin-bottom: 30px;
+      margin-bottom: 0;
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      width: fit-content;
     }
     .vega-bind { color: white !important; font-size: 14px; margin-right: 20px; }
     .vega-bind-name { font-weight: bold; color: #00D4FF; }
@@ -57,13 +69,15 @@
 </head>
 <body>
 
-  <div class="nav-bar">
-    <a href="page1_overview.html" class="tab-btn ">1. Overview</a>
-    <a href="page2_socio.html"    class="tab-btn active">2. Socioeconomic</a>
-    <a href="page3_regional.html" class="tab-btn ">3. Regional Risk</a>
+  <div class="sticky-bar">
+    <div class="nav-bar">
+      <a href="page1_overview.html"  class="tab-btn ">1. Overview</a>
+      <a href="page2_socio.html"     class="tab-btn active">2. Socioeconomic</a>
+      <a href="page3_regional.html"  class="tab-btn ">3. Regional Risk</a>
+    </div>
+    <div id="filters" class="filter-box"></div>
   </div>
 
-  <div id="filters" class="filter-box"></div>
   <div id="vis"></div>
 
   <script>
@@ -137603,7 +137617,7 @@
       },
       "value": "BMI",
       "views": [
-        "view_eff1b552fbaf7c4d_0"
+        "view_f93ff074c6dbc975_0"
       ]
     },
     {
@@ -137662,14 +137676,14 @@
       },
       "views": [
         "view_cd424d2dd14ede19_0",
-        "view_627d85b3e98a3b5b_0",
-        "view_91f1fb8d4491b8e4_1",
+        "view_dfabbae050c5cc02_0",
+        "view_47b7d82694bf30d0_1",
         "view_da03755f5c45a6fb_2",
-        "view_b80b492c578b7ab6_3",
-        "view_ef2127b06e8507d6_4",
-        "view_01a71d2d3e353b59_0",
+        "view_5203f38b6282b64f_3",
+        "view_232c79bb47d70321_4",
+        "view_c8ae3337548606d9_0",
         "view_50264601d1ed2a81_0",
-        "view_eff1b552fbaf7c4d_0",
+        "view_f93ff074c6dbc975_0",
         "view_785b81ea51c87b37_0"
       ]
     },
@@ -137691,14 +137705,14 @@
       "value": 2014,
       "views": [
         "view_cd424d2dd14ede19_0",
-        "view_627d85b3e98a3b5b_0",
-        "view_91f1fb8d4491b8e4_1",
+        "view_dfabbae050c5cc02_0",
+        "view_47b7d82694bf30d0_1",
         "view_da03755f5c45a6fb_2",
-        "view_b80b492c578b7ab6_3",
-        "view_ef2127b06e8507d6_4",
-        "view_01a71d2d3e353b59_0",
+        "view_5203f38b6282b64f_3",
+        "view_232c79bb47d70321_4",
+        "view_c8ae3337548606d9_0",
         "view_50264601d1ed2a81_0",
-        "view_eff1b552fbaf7c4d_0",
+        "view_f93ff074c6dbc975_0",
         "view_785b81ea51c87b37_0"
       ]
     }
@@ -137743,11 +137757,11 @@
           "height": 100,
           "mark": {
             "color": "#00FF9F",
-            "fontSize": 35,
+            "fontSize": 32,
             "fontWeight": "bold",
             "type": "text"
           },
-          "name": "view_627d85b3e98a3b5b_0",
+          "name": "view_dfabbae050c5cc02_0",
           "title": "Avg GDP per Capita",
           "transform": [
             {
@@ -137763,7 +137777,7 @@
               }
             }
           ],
-          "width": 200
+          "width": 210
         },
         {
           "encoding": {
@@ -137777,11 +137791,11 @@
           "height": 100,
           "mark": {
             "color": "#B026FF",
-            "fontSize": 35,
+            "fontSize": 32,
             "fontWeight": "bold",
             "type": "text"
           },
-          "name": "view_91f1fb8d4491b8e4_1",
+          "name": "view_47b7d82694bf30d0_1",
           "title": "Avg Urbanisation %",
           "transform": [
             {
@@ -137797,7 +137811,7 @@
               }
             }
           ],
-          "width": 200
+          "width": 210
         },
         {
           "encoding": {
@@ -137896,7 +137910,7 @@
               "filter": "datum.rank == 1"
             }
           ],
-          "width": 200
+          "width": 210
         },
         {
           "encoding": {
@@ -137908,11 +137922,11 @@
           "height": 100,
           "mark": {
             "color": "#00FF9F",
-            "fontSize": 35,
+            "fontSize": 32,
             "fontWeight": "bold",
             "type": "text"
           },
-          "name": "view_b80b492c578b7ab6_3",
+          "name": "view_5203f38b6282b64f_3",
           "title": "Countries >50% Urban",
           "transform": [
             {
@@ -137945,15 +137959,15 @@
               ]
             },
             {
-              "as": "percentage_majority",
+              "as": "pct",
               "calculate": "(datum.count_majority / datum.total_count) * 100"
             },
             {
               "as": "display_text",
-              "calculate": "format(datum.percentage_majority, '.0f') + '%'"
+              "calculate": "format((datum.count_majority / datum.total_count) * 100, '.0f') + '%'"
             }
           ],
-          "width": 200
+          "width": 210
         },
         {
           "encoding": {
@@ -137973,7 +137987,7 @@
             "fontWeight": "bold",
             "type": "text"
           },
-          "name": "view_ef2127b06e8507d6_4",
+          "name": "view_232c79bb47d70321_4",
           "title": "Dominant Risk Pattern",
           "transform": [
             {
@@ -138041,10 +138055,10 @@
             },
             {
               "as": "status_color",
-              "calculate": "datum.risk_cat == 'Emerging Risk' ? '#FF4D4D' : datum.risk_cat == 'Affluent Risk' ? '#FFAC1C' : datum.risk_cat == 'Resilient Wealth' ? '#00FF9F' : '#00D4FF'"
+              "calculate": "datum.risk_cat == 'Emerging Risk'    ? '#FF4D4D' : datum.risk_cat == 'Affluent Risk'    ? '#FFAC1C' : datum.risk_cat == 'Resilient Wealth' ? '#00FF9F' : '#00D4FF'"
             }
           ],
-          "width": 220
+          "width": 210
         }
       ],
       "resolve": {
@@ -138059,7 +138073,7 @@
           "data": {
             "name": "data-939372c7b1c94d7bddf9368abd2ec472"
           },
-          "height": 300,
+          "height": 320,
           "layer": [
             {
               "encoding": {
@@ -138135,10 +138149,10 @@
               },
               "mark": {
                 "opacity": 0.8,
-                "size": 30,
+                "size": 25,
                 "type": "bar"
               },
-              "name": "view_01a71d2d3e353b59_0",
+              "name": "view_c8ae3337548606d9_0",
               "transform": [
                 {
                   "filter": {
@@ -138237,13 +138251,13 @@
             }
           ],
           "title": "Prevalence by Income & Gender",
-          "width": 550
+          "width": 520
         },
         {
           "data": {
             "name": "data-6878421da809bf1e9fe7cda461ce868a"
           },
-          "height": 300,
+          "height": 320,
           "layer": [
             {
               "encoding": {
@@ -138287,8 +138301,7 @@
               "mark": {
                 "type": "rect"
               },
-              "name": "view_50264601d1ed2a81_0",
-              "title": "Variable Correlations"
+              "name": "view_50264601d1ed2a81_0"
             },
             {
               "encoding": {
@@ -138304,21 +138317,6 @@
                   "format": ".2f",
                   "type": "quantitative"
                 },
-                "tooltip": [
-                  {
-                    "field": "Var1",
-                    "type": "nominal"
-                  },
-                  {
-                    "field": "Var2",
-                    "type": "nominal"
-                  },
-                  {
-                    "field": "Correlation",
-                    "format": ".2f",
-                    "type": "quantitative"
-                  }
-                ],
                 "x": {
                   "field": "Var1",
                   "title": null,
@@ -138332,11 +138330,11 @@
               },
               "mark": {
                 "type": "text"
-              },
-              "title": "Variable Correlations"
+              }
             }
           ],
-          "width": 350
+          "title": "Variable Correlations (Global Dataset)",
+          "width": 520
         }
       ],
       "resolve": {
@@ -138368,6 +138366,10 @@
               {
                 "field": "Prevalence",
                 "type": "quantitative"
+              },
+              {
+                "field": "Region",
+                "type": "nominal"
               }
             ],
             "x": {
@@ -138387,13 +138389,13 @@
               "type": "quantitative"
             }
           },
-          "height": 350,
+          "height": 320,
           "mark": {
             "opacity": 0.7,
             "size": 80,
             "type": "circle"
           },
-          "name": "view_eff1b552fbaf7c4d_0",
+          "name": "view_f93ff074c6dbc975_0",
           "title": "GDP vs. Prevalence Gradient",
           "transform": [
             {
@@ -138425,10 +138427,10 @@
               }
             }
           ],
-          "width": 450
+          "width": 520
         },
         {
-          "height": 350,
+          "height": 320,
           "layer": [
             {
               "encoding": {
@@ -138524,7 +138526,7 @@
             }
           },
           "title": "Economic vs. Health Trends",
-          "width": 450
+          "width": 520
         }
       ],
       "resolve": {

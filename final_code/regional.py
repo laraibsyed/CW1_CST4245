@@ -1,8 +1,18 @@
+import json
 import pandas as pd
 import altair as alt
 
 # Load the cleaned data
 data = pd.read_pickle("final_code/clean_data.pkl")
+
+# ── DATA EXPORT ───────────────────────────────────────────────────────
+# Write data to a named JSON file so Altair references it by URL rather
+# than inlining the entire DataFrame into the chart spec. This prevents
+# the JSON serialisation hang / KeyboardInterrupt on to_json() / to_dict().
+DATA_FILE = "final_code/data_regional.json"
+data.to_json(DATA_FILE, orient="records")
+data_url = alt.UrlData(url=DATA_FILE)
+
 alt.data_transformers.disable_max_rows()
 
 # --- THEME CONFIGURATION ---
@@ -35,14 +45,16 @@ def cyberpunk_theme():
 # --- SCALES & SELECTIONS ---
 gender_scale = alt.Scale(domain=['Men', 'Women'], range=['#347DC1', '#FFC0CB'])
 
-# Filters: Health Metric + Year
+# Global filters: Health Metric + Year
 metric_bind = alt.binding_select(options=['BMI', 'BP', 'Diabetes'], name='Health Metric: ')
-select_metric = alt.selection_point(fields=['Metric'], bind=metric_bind, value='BMI', name="metric_filter")
+select_metric = alt.selection_point(
+    fields=['Metric'], bind=metric_bind, value='BMI', name="metric_filter"
+)
 
 select_year = alt.selection_point(
     name="year_regional",
     fields=['Year'],
-    bind=alt.binding_range(min=1980, max=2016, step=1, name='Year: '),
+    bind=alt.binding_range(min=1980, max=2014, step=1, name='Year: '),
     value=2014
 )
 
@@ -52,173 +64,281 @@ regional_title = alt.Chart(pd.DataFrame({'t': ["Regional Risk Analysis"]})).mark
 ).encode(text='t:N').properties(width=1100, height=50)
 
 # ── KPI HELPERS ───────────────────────────────────────────────────────
-# We pre-compute fastest growing, most improved, gender gap outside vega transforms
-# because multi-step window + grouped subtraction is hard in Vega transforms alone.
+# ALL KPIs use the live `data` DataFrame with pure Vega-Lite transforms.
+# No pandas precomputation — every KPI reacts to both select_metric & select_year.
 
-# Fastest growing region: (latest avg prevalence) - (earliest avg prevalence) per region, for each metric
-def regional_growth(df, metric):
-    g = df[df['Gender'].isin(['Men', 'Women'])].groupby(['Region', 'Year'])[metric].mean().reset_index()
-    earliest = g.loc[g.groupby('Region')['Year'].idxmin()].rename(columns={metric: 'early'})
-    latest   = g.loc[g.groupby('Region')['Year'].idxmax()].rename(columns={metric: 'late'})
-    merged = earliest[['Region', 'early']].merge(latest[['Region', 'late']], on='Region')
-    merged['growth'] = merged['late'] - merged['early']
-    return merged
+def fold_and_filter(include_year=True):
+    """
+    Base pipeline: gender filter → fold 3 metrics → filter to selected metric.
+    Pass include_year=False for KPIs that aggregate across ALL years (Fastest/Improved).
+    """
+    base = (
+        alt.Chart(data_url)
+        .transform_filter(alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']))
+        .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
+        .transform_filter(select_metric)
+    )
+    if include_year:
+        base = base.transform_filter(select_year)
+    return base
 
-growth_bmi      = regional_growth(data, 'BMI');      growth_bmi['Metric']      = 'BMI'
-growth_bp       = regional_growth(data, 'BP');        growth_bp['Metric']       = 'BP'
-growth_diabetes = regional_growth(data, 'Diabetes');  growth_diabetes['Metric'] = 'Diabetes'
-growth_df = pd.concat([growth_bmi, growth_bp, growth_diabetes])
 
-# Gender gap per region/year/metric
-def gender_gap(df, metric, year):
-    g = df[(df['Year'] == year) & df['Gender'].isin(['Men', 'Women'])].groupby(['Region', 'Gender'])[metric].mean().unstack('Gender').reset_index()
-    if 'Men' in g.columns and 'Women' in g.columns:
-        g['gap'] = (g['Men'] - g['Women']).abs()
-    else:
-        g['gap'] = 0
-    return g[['Region', 'gap']]
+# ── KPI 1: Highest Risk Region ─────────────────────────────────────────
+kpi_highest = (
+    fold_and_filter(include_year=True)
+    .transform_aggregate(avg_prev='mean(Prevalence)', groupby=['Region'])
+    .transform_window(
+        rank='rank()',
+        sort=[alt.SortField('avg_prev', order='descending')]
+    )
+    .transform_filter('datum.rank == 1')
+    .mark_text(fontSize=20, fontWeight='bold', color='#FF4D4D')
+    .encode(text='Region:N')
+    .properties(width=210, height=100, title="Highest Risk Region")
+)
 
-# Build static lookup tables for KPIs — we'll embed them as inline data
-# and filter by metric using Vega transforms
+# ── KPI 2: Lowest Risk Region ──────────────────────────────────────────
+kpi_lowest = (
+    fold_and_filter(include_year=True)
+    .transform_aggregate(avg_prev='mean(Prevalence)', groupby=['Region'])
+    .transform_window(
+        rank='rank()',
+        sort=[alt.SortField('avg_prev', order='ascending')]
+    )
+    .transform_filter('datum.rank == 1')
+    .mark_text(fontSize=20, fontWeight='bold', color='#00FF9F')
+    .encode(text='Region:N')
+    .properties(width=210, height=100, title="Lowest Risk Region")
+)
 
-# --- KPI: Highest Risk (by region, avg across genders, for selected metric/year) ---
-# We fold the data and compute per-region averages, then pick the top region
-kpi_base = alt.Chart(data).transform_filter(select_year).transform_filter(
-    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
-).transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']).transform_filter(select_metric)
+# ── KPI 3: Fastest Growing Risk ────────────────────────────────────────
+# Uses ALL years (no year filter). Per region: avg prevalence per year →
+# grab earliest value (asc window) and latest value (desc window) →
+# growth = last - first → collapse per region → rank descending.
+kpi_fastest = (
+    fold_and_filter(include_year=False)
+    .transform_aggregate(
+        avg_prev='mean(Prevalence)', groupby=['Region', 'Year']
+    )
+    .transform_window(
+        first_val='first_value(avg_prev)',
+        sort=[alt.SortField('Year', order='ascending')],
+        groupby=['Region'],
+        frame=[None, None]
+    )
+    .transform_window(
+        last_val='first_value(avg_prev)',
+        sort=[alt.SortField('Year', order='descending')],
+        groupby=['Region'],
+        frame=[None, None]
+    )
+    .transform_calculate(growth='datum.last_val - datum.first_val')
+    .transform_aggregate(growth='mean(growth)', groupby=['Region'])
+    .transform_window(
+        rank='rank()',
+        sort=[alt.SortField('growth', order='descending')]
+    )
+    .transform_filter('datum.rank == 1')
+    .mark_text(fontSize=20, fontWeight='bold', color='#FFAC1C')
+    .encode(text='Region:N')
+    .properties(width=210, height=100, title="Fastest Growing Risk")
+)
 
-kpi_highest = kpi_base.transform_aggregate(
-    avg_prev='mean(Prevalence)', groupby=['Region']
-).transform_window(
-    rank='rank()', sort=[alt.SortField('avg_prev', order='descending')]
-).transform_filter('datum.rank == 1').mark_text(
-    fontSize=20, fontWeight='bold', color='#FF4D4D'
-).encode(text='Region:N').properties(width=210, height=100, title="Highest Risk Region")
+# ── KPI 4: Most Stable / Improved ─────────────────────────────────────
+# Same as above but rank by smallest absolute growth.
+kpi_improved = (
+    fold_and_filter(include_year=False)
+    .transform_aggregate(
+        avg_prev='mean(Prevalence)', groupby=['Region', 'Year']
+    )
+    .transform_window(
+        first_val='first_value(avg_prev)',
+        sort=[alt.SortField('Year', order='ascending')],
+        groupby=['Region'],
+        frame=[None, None]
+    )
+    .transform_window(
+        last_val='first_value(avg_prev)',
+        sort=[alt.SortField('Year', order='descending')],
+        groupby=['Region'],
+        frame=[None, None]
+    )
+    .transform_calculate(growth='datum.last_val - datum.first_val')
+    .transform_aggregate(growth='mean(growth)', groupby=['Region'])
+    .transform_calculate(abs_growth='abs(datum.growth)')
+    .transform_window(
+        rank='rank()',
+        sort=[alt.SortField('abs_growth', order='ascending')]
+    )
+    .transform_filter('datum.rank == 1')
+    .mark_text(fontSize=20, fontWeight='bold', color='#B026FF')
+    .encode(text='Region:N')
+    .properties(width=210, height=100, title="Most Stable / Improved")
+)
 
-# --- KPI: Lowest Risk ---
-kpi_lowest = kpi_base.transform_aggregate(
-    avg_prev='mean(Prevalence)', groupby=['Region']
-).transform_window(
-    rank='rank()', sort=[alt.SortField('avg_prev', order='ascending')]
-).transform_filter('datum.rank == 1').mark_text(
-    fontSize=20, fontWeight='bold', color='#00FF9F'
-).encode(text='Region:N').properties(width=210, height=100, title="Lowest Risk Region")
-
-# --- KPI: Fastest Growing (precomputed, embedded) ---
-kpi_fastest = alt.Chart(growth_df).transform_filter(select_metric).transform_window(
-    rank='rank()', sort=[alt.SortField('growth', order='descending')]
-).transform_filter('datum.rank == 1').mark_text(
-    fontSize=20, fontWeight='bold', color='#FFAC1C'
-).encode(text='Region:N').properties(width=210, height=100, title="Fastest Growing Risk")
-
-# --- KPI: Most Improved (smallest growth, could be negative) ---
-kpi_improved = alt.Chart(growth_df).transform_filter(select_metric).transform_calculate(
-    abs_growth='abs(datum.growth)'
-).transform_window(
-    rank='rank()', sort=[alt.SortField('abs_growth', order='ascending')]
-).transform_filter('datum.rank == 1').mark_text(
-    fontSize=20, fontWeight='bold', color='#B026FF'
-).encode(text='Region:N').properties(width=210, height=100, title="Most Stable / Improved")
-
-# --- KPI: Gender Gap (precomputed for all years & metrics) ---
-gap_rows = []
-for metric in ['BMI', 'BP', 'Diabetes']:
-    for year in data['Year'].unique():
-        g = gender_gap(data, metric, year)
-        g['Metric'] = metric
-        g['Year']   = year
-        gap_rows.append(g)
-gap_df = pd.concat(gap_rows)
-
-kpi_gender_gap = alt.Chart(gap_df).transform_filter(select_year).transform_filter(
-    select_metric
-).transform_window(
-    rank='rank()', sort=[alt.SortField('gap', order='descending')]
-).transform_filter('datum.rank == 1').mark_text(
-    fontSize=20, fontWeight='bold', color='#00D4FF'
-).encode(text='Region:N').properties(width=210, height=100, title="Biggest Gender Gap")
+# ── KPI 5: Biggest Gender Gap ──────────────────────────────────────────
+# Aggregate Men and Women in a single pipeline — no lookup needed.
+# Strategy: filter to Men+Women, fold metric, filter to selected metric+year,
+# aggregate mean per (Region, Gender), then pivot via two windows:
+# one capturing the Men value and one the Women value, compute abs diff,
+# collapse to one row per region, rank descending.
+kpi_gender_gap = (
+    alt.Chart(data_url)
+    .transform_filter(alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']))
+    .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
+    .transform_filter(select_metric)
+    .transform_filter(select_year)
+    .transform_aggregate(avg_prev='mean(Prevalence)', groupby=['Region', 'Gender'])
+    .transform_calculate(
+        men_val="datum.Gender === 'Men' ? datum.avg_prev : 0",
+        women_val="datum.Gender === 'Women' ? datum.avg_prev : 0"
+    )
+    .transform_aggregate(
+        men_avg='max(men_val)',
+        women_avg='max(women_val)',
+        groupby=['Region']
+    )
+    .transform_calculate(gap='abs(datum.men_avg - datum.women_avg)')
+    .transform_window(
+        rank='rank()',
+        sort=[alt.SortField('gap', order='descending')]
+    )
+    .transform_filter('datum.rank == 1')
+    .mark_text(fontSize=20, fontWeight='bold', color='#00D4FF')
+    .encode(text='Region:N')
+    .properties(width=210, height=100, title="Biggest Gender Gap")
+)
 
 kpi_row = alt.hconcat(
     kpi_highest, kpi_lowest, kpi_fastest, kpi_improved, kpi_gender_gap
 ).resolve_scale(color='independent')
 
-# ── ROW 2: LINE CHART + GROUPED BAR CHART ────────────────────────────
+# ── ROW 2: LINE CHART + GROUPED BAR CHART ─────────────────────────────
 
-# Line chart: health risk trends by region over time
-line_base = alt.Chart(data).transform_filter(
-    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
-).transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']).transform_filter(select_metric)
+# Line chart: risk trends by region over time (selected metric, all years)
+line_chart = (
+    alt.Chart(data_url)
+    .transform_filter(alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']))
+    .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
+    .transform_filter(select_metric)
+    .mark_line(strokeWidth=2.5, point=True)
+    .encode(
+        x=alt.X('Year:O', title='Year'),
+        y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)',
+                scale=alt.Scale(zero=False)),
+        color=alt.Color('Region:N', legend=alt.Legend(title='Region')),
+        tooltip=[
+            'Region:N', 'Year:O',
+            alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Mean (%)')
+        ]
+    )
+    .properties(width=520, height=320,
+                title="Health Risk Trends by Region Over Time")
+)
 
-line_chart = line_base.mark_line(strokeWidth=2.5, point=True).encode(
-    x=alt.X('Year:O', title='Year'),
-    y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)', scale=alt.Scale(zero=False)),
-    color=alt.Color('Region:N', legend=alt.Legend(title='Region')),
-    tooltip=['Region:N', 'Year:O', alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Mean (%)')]
-).properties(width=520, height=320, title="Health Risk Trends by Region Over Time")
-
-# Grouped bar chart: metrics side-by-side per region for selected year
-bar_grouped_base = alt.Chart(data).transform_filter(select_year).transform_filter(
-    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
-).transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
-
-bar_grouped = bar_grouped_base.mark_bar(opacity=0.85).encode(
-    x=alt.X('Region:N', title='Region'),
-    y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)', scale=alt.Scale(zero=False)),
-    color=alt.Color('Metric:N', scale=alt.Scale(
-        domain=['BMI', 'BP', 'Diabetes'],
-        range=['#00FF9F', '#00D4FF', '#FF4D4D']
-    )),
-    xOffset=alt.XOffset('Metric:N'),
-    tooltip=['Region:N', 'Metric:N', alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Mean (%)')]
-).properties(width=520, height=320, title="Health Metrics by Region (Selected Year)")
+# Grouped bar: selected metric by gender per region, for selected year
+bar_grouped = (
+    alt.Chart(data_url)
+    .transform_filter(select_year)
+    .transform_filter(alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']))
+    .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
+    .transform_filter(select_metric)
+    .mark_bar(opacity=0.85)
+    .encode(
+        x=alt.X('Region:N', title='Region'),
+        y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)',
+                scale=alt.Scale(zero=False)),
+        color=alt.Color('Gender:N', scale=gender_scale),
+        xOffset=alt.XOffset('Gender:N'),
+        tooltip=[
+            'Region:N', 'Gender:N', 'Metric:N',
+            alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Mean (%)')
+        ]
+    )
+    .properties(width=520, height=320,
+                title="Prevalence by Region & Gender (Selected Year & Metric)")
+)
 
 row_2 = alt.hconcat(line_chart, bar_grouped).resolve_scale(color='independent')
 
-# ── ROW 3: REGIONAL RISK SHARE + COMBO CHART ─────────────────────────
+# ── ROW 3: REGIONAL RISK SHARE + COMBO CHART ──────────────────────────
 
-# Stacked bar: share of global prevalence by region over time
-stacked_base = alt.Chart(data).transform_filter(
-    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
-).transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']).transform_filter(select_metric)
-
-stacked_risk_share = stacked_base.mark_bar().transform_aggregate(
-    total_prev='sum(Prevalence)', groupby=['Year', 'Region']
-).transform_joinaggregate(
-    global_total='sum(total_prev)', groupby=['Year']
-).transform_calculate(
-    share='datum.total_prev / datum.global_total * 100'
-).encode(
-    x=alt.X('Year:O', title='Year'),
-    y=alt.Y('share:Q', title='Prevalence Share (%)', stack='normalize',
-            axis=alt.Axis(format='%')),
-    color=alt.Color('Region:N'),
-    tooltip=['Region:N', 'Year:O', alt.Tooltip('share:Q', format='.1f', title='Share (%)')]
-).properties(width=520, height=320, title="Regional Risk Share of Global Prevalence")
-
-# Combo chart: avg prevalence (line) + urbanisation (bars) by region for selected year
-combo_bars = alt.Chart(data).transform_filter(select_year).transform_filter(
-    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
-).transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']).transform_filter(
-    select_metric
-).mark_bar(opacity=0.6, color='#B026FF').encode(
-    x=alt.X('Region:N', title='Region'),
-    y=alt.Y('mean(Urban_Population):Q', title='Avg Urbanisation (%)'),
-    tooltip=['Region:N', alt.Tooltip('mean(Urban_Population):Q', format='.1f', title='Urbanisation (%)')]
+# Stacked bar: share of global prevalence by region over time (selected metric)
+stacked_risk_share = (
+    alt.Chart(data_url)
+    .transform_filter(alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']))
+    .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
+    .transform_filter(select_metric)
+    .mark_bar()
+    .transform_aggregate(
+        total_prev='sum(Prevalence)', groupby=['Year', 'Region']
+    )
+    .transform_joinaggregate(
+        global_total='sum(total_prev)', groupby=['Year']
+    )
+    .transform_calculate(
+        share='datum.total_prev / datum.global_total * 100'
+    )
+    .encode(
+        x=alt.X('Year:O', title='Year'),
+        y=alt.Y('share:Q', title='Prevalence Share (%)',
+                stack='normalize', axis=alt.Axis(format='%')),
+        color=alt.Color('Region:N'),
+        tooltip=[
+            'Region:N', 'Year:O',
+            alt.Tooltip('share:Q', format='.1f', title='Share (%)')
+        ]
+    )
+    .properties(width=520, height=320,
+                title="Regional Risk Share of Global Prevalence")
 )
 
-combo_line = alt.Chart(data).transform_filter(select_year).transform_filter(
-    alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women'])
-).transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence']).transform_filter(
-    select_metric
-).mark_line(color='#00FF9F', strokeWidth=3, point=alt.OverlayMarkDef(color='#00FF9F', size=60)).encode(
-    x=alt.X('Region:N', title='Region'),
-    y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)', scale=alt.Scale(zero=False)),
-    tooltip=['Region:N', alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Prevalence (%)')]
+# Combo chart: urbanisation (bars) + prevalence (line) per region, selected year & metric
+combo_bars = (
+    alt.Chart(data_url)
+    .transform_filter(select_year)
+    .transform_filter(alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']))
+    .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
+    .transform_filter(select_metric)
+    .mark_bar(opacity=0.6, color='#B026FF')
+    .encode(
+        x=alt.X('Region:N', title='Region'),
+        y=alt.Y('mean(Urban_Population):Q', title='Avg Urbanisation (%)'),
+        tooltip=[
+            'Region:N',
+            alt.Tooltip('mean(Urban_Population):Q', format='.1f',
+                        title='Urbanisation (%)')
+        ]
+    )
 )
 
-combo_chart = alt.layer(combo_bars, combo_line).resolve_scale(
-    y='independent'
-).properties(width=520, height=320, title="Risk vs. Urbanisation by Region")
+combo_line = (
+    alt.Chart(data_url)
+    .transform_filter(select_year)
+    .transform_filter(alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']))
+    .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
+    .transform_filter(select_metric)
+    .mark_line(
+        color='#00FF9F', strokeWidth=3,
+        point=alt.OverlayMarkDef(color='#00FF9F', size=60)
+    )
+    .encode(
+        x=alt.X('Region:N', title='Region'),
+        y=alt.Y('mean(Prevalence):Q', title='Mean Prevalence (%)',
+                scale=alt.Scale(zero=False)),
+        tooltip=[
+            'Region:N',
+            alt.Tooltip('mean(Prevalence):Q', format='.1f', title='Prevalence (%)')
+        ]
+    )
+)
+
+combo_chart = (
+    alt.layer(combo_bars, combo_line)
+    .resolve_scale(y='independent')
+    .properties(width=520, height=320,
+                title="Risk vs. Urbanisation by Region")
+)
 
 row_3 = alt.hconcat(stacked_risk_share, combo_chart).resolve_scale(color='independent')
 
@@ -241,15 +361,35 @@ page_regional = page_regional.configure_view(
     anchor='middle'
 )
 
-# Save raw html first
 page_regional.save('page3_regional.html')
-regional_json = page_regional.to_json()
 print("Page 3 saved ✅")
 
 
-# ── SAVE WITH NAV BAR ─────────────────────────────────────────────────
-def save_dashboard(chart, filename, active_page):
-    chart_json = chart.to_json()
+# ── SAVE WITH NAV BAR (self-contained HTML) ───────────────────────────
+# We patch the Vega spec to replace the external data URL with the actual
+# JSON records inline, so the HTML works when opened directly from disk
+# without a local web server.
+def save_dashboard(chart, filename, active_page, data_file):
+    import json, re
+
+    # Load data records and build a lookup: url → inline values
+    with open(data_file, "r", encoding="utf-8") as f:
+        records = json.load(f)
+
+    # Get the spec dict and walk it to replace any UrlData references
+    spec = json.loads(chart.to_json())
+
+    def inline_data(obj):
+        if isinstance(obj, dict):
+            if obj.get("url") == data_file:
+                return {"values": records}
+            return {k: inline_data(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [inline_data(v) for v in obj]
+        return obj
+
+    spec = inline_data(spec)
+    chart_json = json.dumps(spec)
 
     btn1 = 'active' if active_page == 'overview' else ''
     btn2 = 'active' if active_page == 'socio'    else ''
@@ -310,6 +450,7 @@ def save_dashboard(chart, filename, active_page):
       align-items: center;
       background: #2b2b2b;
       padding-bottom: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }}
     .filter-box {{ 
       background: #3d3d3d; 
@@ -352,4 +493,4 @@ def save_dashboard(chart, filename, active_page):
     print(f"{filename} saved ✅")
 
 
-save_dashboard(page_regional, "page3_regional.html", "regional")
+save_dashboard(page_regional, "page3_regional.html", "regional", DATA_FILE)

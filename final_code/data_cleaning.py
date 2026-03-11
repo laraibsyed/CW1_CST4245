@@ -1,16 +1,13 @@
 import pandas as pd
-import altair as alt
 
-alt.data_transformers.disable_max_rows()
+# ── LOAD RAW FILES ─────────────────────────────────────────────────────
+xls = pd.ExcelFile(r"cw1 -dataset.xlsx")
 
-file_path = r"cw1 -dataset.xlsx"
-
-xls = pd.ExcelFile(file_path)
-
-bmi = pd.read_excel(xls, 'BMI')
-bp = pd.read_excel(xls, 'Raised Blood Pressure')
+bmi      = pd.read_excel(xls, 'BMI')
+bp       = pd.read_excel(xls, 'Raised Blood Pressure')
 diabetes = pd.read_excel(xls, 'Diabetes')
 
+# ── RENAME HEALTH SHEETS ───────────────────────────────────────────────
 bmi = bmi.rename(columns={
     "Country/Region/World": "Country",
     "Sex": "Gender",
@@ -29,178 +26,107 @@ diabetes = diabetes.rename(columns={
     "Age-standardised diabetes prevalence": "Diabetes"
 })
 
-print("Column Names: ", diabetes.columns)
+# ── MERGE & CLEAN HEALTH DATA ──────────────────────────────────────────
+data = (
+    bmi
+    .merge(bp,       on=["Country", "Year", "Gender"], how="outer")
+    .merge(diabetes, on=["Country", "Year", "Gender"], how="outer")
+)
 
-data = bmi.merge(bp, on=["Country", "Year", "Gender"], how="outer")
-data = data.merge(diabetes, on=["Country", "Year", "Gender"], how="outer")
-
+# Drop rows only where ALL THREE health metrics are missing
 data = data.dropna(subset=["BMI", "BP", "Diabetes"])
 
-data['Year'] = data['Year'].astype(int)
-data['BMI'] = pd.to_numeric(data['BMI'], errors='coerce')
-data['BP'] = pd.to_numeric(data['BP'], errors='coerce')
-data['Diabetes'] = pd.to_numeric(data['Diabetes'], errors='coerce')
+data["Year"]    = data["Year"].astype(int)
+data["BMI"]     = pd.to_numeric(data["BMI"],     errors="coerce") * 100
+data["BP"]      = pd.to_numeric(data["BP"],      errors="coerce") * 100
+data["Diabetes"]= pd.to_numeric(data["Diabetes"],errors="coerce") * 100
 
+# Drop any rows where conversion left a null in a health metric
 data = data.dropna(subset=["BMI", "BP", "Diabetes"])
 
-data['BMI'] *= 100
-data['BP'] *= 100
-data['Diabetes'] *= 100
-
-gdp = pd.read_csv("GDP.csv")
-income = pd.read_csv("GDP Metadata.csv")
-urban_population = pd.read_csv("Urban Population.csv")
-
-gdp = gdp.drop(columns=['GDP per capita (Annotations)'], errors='ignore')
-gdp_long = gdp.rename(columns={'Entity': 'Country', 'Code': 'Country Code', 'GDP per capita': 'GDP'})
-gdp_long = gdp_long[~gdp_long['Country Code'].str.contains('AFE|AFW', na=False)]
-gdp_long['Year'] = pd.to_numeric(gdp_long['Year'], errors='coerce')
-gdp_long = gdp_long[(gdp_long['Year'] >= 1980) & (gdp_long['Year'] <= 2016)]
-
-urban_population.rename(columns={
-    urban_population.columns[0]: 'Country Name',
-    urban_population.columns[1]: 'Country Code'
-}, inplace=True)
-
-urban_population = urban_population.drop(
-    columns=['Indicator Name', 'Indicator Code', 'Unnamed: 69'],
-    errors='ignore'
-)
-urban_long = urban_population.melt(
-    id_vars=['Country Name', 'Country Code'],
-    var_name='Year',
-    value_name='Urban_Population'
-)
-urban_long['Year'] = pd.to_numeric(urban_long['Year'], errors='coerce')
-urban_long = urban_long[(urban_long['Year'] >= 1980) & (urban_long['Year'] <= 2016)]
-urban_long = urban_long.rename(columns={'Country Name': 'Country'})
-urban_long.columns
-
-income_clean = income[['Country Code', 'Region', 'IncomeGroup']]
-
-health_countries = set(data['Country'].unique())
-urban_countries = set(urban_long['Country'].unique())
-
-missing_in_urban = health_countries - urban_countries
-print("Countries in health data not in urban population:", missing_in_urban)
-
-urban_long = urban_population.melt(
-    id_vars=['Country Name', 'Country Code'],
-    var_name='Year',
-    value_name='Urban_Population'
-)
-urban_long = urban_long.rename(columns={'Country Name': 'Country'})
-urban_long['Year'] = pd.to_numeric(urban_long['Year'], errors='coerce')
-
-data = data.merge(
-    urban_long[['Country', 'Year', 'Urban_Population']],
-    on=['Country', 'Year'],
-    how='left'
+# ── LOAD & CLEAN GDP ───────────────────────────────────────────────────
+gdp_long = (
+    pd.read_csv("GDP.csv")
+    .drop(columns=["GDP per capita (Annotations)"], errors="ignore")
+    .rename(columns={"Entity": "Country", "Code": "Country Code", "GDP per capita": "GDP"})
 )
 
-print("Missing Urban Population values:", data['Urban_Population'].isna().sum())
-print(data[data['Urban_Population'].isna()][['Country', 'Year']].drop_duplicates())
+# Remove aggregate/regional codes that aren't individual countries
+gdp_long = gdp_long[
+    ~gdp_long["Country Code"].str.contains("AFE|AFW|AFR|EAS|OCE", na=False)
+]
 
-code_to_country = urban_long[['Country Code', 'Country']].drop_duplicates()
+gdp_long["Year"] = pd.to_numeric(gdp_long["Year"], errors="coerce")
+gdp_long = gdp_long[(gdp_long["Year"] >= 1980) & (gdp_long["Year"] <= 2016)]
+gdp_long["Country Code"] = gdp_long["Country Code"].str.strip()
 
+# ── LOAD & CLEAN URBAN POPULATION ─────────────────────────────────────
+urban_raw = pd.read_csv("Urban Population.csv")
+urban_raw = urban_raw.rename(columns={
+    urban_raw.columns[0]: "Country",
+    urban_raw.columns[1]: "Country Code"
+}).drop(columns=["Indicator Name", "Indicator Code", "Unnamed: 69"], errors="ignore")
 
-urban_long_clean = urban_long[['Country', 'Year', 'Urban_Population']].copy()
-data = data.merge(
-    urban_long[['Country', 'Year', 'Urban_Population']],
-    on=['Country', 'Year'],
-    how='left'
+urban_long = urban_raw.melt(
+    id_vars=["Country", "Country Code"],
+    var_name="Year",
+    value_name="Urban_Population"
+)
+urban_long["Year"] = pd.to_numeric(urban_long["Year"], errors="coerce")
+urban_long = urban_long[(urban_long["Year"] >= 1980) & (urban_long["Year"] <= 2016)]
+urban_long["Country Code"] = urban_long["Country Code"].str.strip()
+
+# Shared Country Code → Country name lookup (used for GDP and Income joins)
+code_to_country = (
+    urban_long[["Country Code", "Country"]]
+    .drop_duplicates()
 )
 
-if 'Urban_Population_x' in data.columns:
-    data['Urban_Population'] = data['Urban_Population_x']
-    data = data.drop(columns=['Urban_Population_x', 'Urban_Population_y'], errors='ignore')
-
-print("Columns in health data after adding Urban Population:", data.columns)
-print("Missing Urban Population values:", data['Urban_Population'].isna().sum())
-
-print("Columns in health data after adding Urban Population:", data.columns)
-print("Missing Urban Population values:", data['Urban_Population'].isna().sum())
-print(data[data['Urban_Population'].isna()][['Country', 'Year']].drop_duplicates())
-
-income_clean = income[['Country Code', 'Region', 'IncomeGroup']].copy()
-income_clean = income_clean.merge(
-    code_to_country,  
-    on='Country Code',
-    how='left'
+# ── LOAD & CLEAN INCOME / REGION METADATA ─────────────────────────────
+income_clean = (
+    pd.read_csv("GDP Metadata.csv")[["Country Code", "Region", "IncomeGroup"]]
+    .copy()
 )
-print("Income sample after merge:")
-print(income_clean[['Country Code', 'Country', 'Region', 'IncomeGroup']].head())
-gdp_long = gdp_long[~gdp_long['Country Code'].str.contains('AFE|AFW|AFR|EAS|OCE', na=False)]
+income_clean["Country Code"] = income_clean["Country Code"].str.strip()
+income_clean = income_clean.merge(code_to_country, on="Country Code", how="left")
 
-gdp_long['Country Code'] = gdp_long['Country Code'].str.strip()
-code_to_country['Country Code'] = code_to_country['Country Code'].str.strip()
-
+# ── MAP COUNTRY NAMES ONTO GDP ─────────────────────────────────────────
 gdp_long = gdp_long.merge(
-    code_to_country[['Country Code', 'Country']], 
-    on='Country Code', 
-    how='left'
+    code_to_country[["Country Code", "Country"]],
+    on="Country Code",
+    how="left"
 )
-if 'Country_y' in gdp_long.columns:
-    gdp_long['Country'] = gdp_long['Country_y']
-    gdp_long = gdp_long.drop(columns=['Country_x', 'Country_y'], errors='ignore')
+# Prefer the World Bank country name; fall back to the original if no match
+gdp_long["Country"] = gdp_long["Country_y"].fillna(gdp_long["Country_x"])
+gdp_long = gdp_long.drop(columns=["Country_x", "Country_y"])
 
-gdp_long.loc[gdp_long['Country Code']=='TWN', 'Country'] = 'Taiwan'
+# Manual fix for Taiwan (not in World Bank country list)
+gdp_long.loc[gdp_long["Country Code"] == "TWN", "Country"] = "Taiwan"
 
-print(gdp_long[['Country Code', 'Country', 'Year', 'GDP']].head())
-
-missing_gdp = gdp_long[gdp_long['Country'].isna()]['Country Code'].unique()
-missing_income = income_clean[income_clean['Country'].isna()]['Country Code'].unique()
-
-print("Missing GDP countries:", missing_gdp)
-print("Missing Income countries:", missing_income)
-
-data = data.merge(
-    gdp_long[['Country', 'Year', 'GDP']],
-    on=['Country', 'Year'],
-    how='left'
+# ── MERGE EVERYTHING INTO MASTER DATAFRAME ────────────────────────────
+data = (
+    data
+    .merge(urban_long[["Country", "Year", "Urban_Population"]], on=["Country", "Year"], how="left")
+    .merge(gdp_long[["Country",  "Year", "GDP"]],               on=["Country", "Year"], how="left")
+    .merge(income_clean[["Country", "Region", "IncomeGroup"]],  on="Country",           how="left")
 )
 
-data = data.merge(
-    income_clean[['Country', 'Region', 'IncomeGroup']],
-    on='Country',
-    how='left'
-)
+# Fill missing region label with "Islands" (countries not in World Bank mapping)
+data["Region"] = data["Region"].fillna("Islands")
 
-if 'Urban_Population_x' in data.columns:
-    data['Urban_Population'] = data['Urban_Population_x']
-    data = data.drop(columns=['Urban_Population_x', 'Urban_Population_y'], errors='ignore')
+# Fill missing income group label (keep Region/GDP/Urban as NaN — do NOT drop)
+data["IncomeGroup"] = data["IncomeGroup"].fillna("Not Classified")
 
-print("Columns in final master dataframe:")
-print(data.columns)
-print("Sample rows:")
+data["GDP"]              = pd.to_numeric(data["GDP"],              errors="coerce")
+data["Urban_Population"] = pd.to_numeric(data["Urban_Population"], errors="coerce")
+
+# ── DIAGNOSTICS ───────────────────────────────────────────────────────
+print("Final shape:", data.shape)
+print("\nMissing values per column:")
+print(data.isna().sum().sort_values(ascending=False))
+print("\nSample rows:")
 print(data.head())
 
-print("Missing values per column:")
-print(data[['BMI', 'BP', 'Diabetes', 'Urban_Population', 'GDP', 'Region', 'IncomeGroup']].isna().sum())
-
-data['IncomeGroup'] = data['IncomeGroup'].fillna("Not Classified")
-print(data.isna().sum().sort_values(ascending=False))
-
-missing_gdp_counts = (
-    data[data['GDP'].isna()]
-    .groupby('Country')
-    .size()
-    .sort_values(ascending=False)
-)
-
-print(missing_gdp_counts.head(50))
-
-print(data[(data['Country'] == 'United Arab Emirates') & (data['GDP'].isna())][['Year', 'Gender']])
-print(gdp_long[gdp_long['Country'] == 'United Arab Emirates'][['Year', 'GDP']].sort_values('Year'))
-
-data = data.dropna(subset=['GDP', "Region", "Urban_Population"])
-
-print(data.isna().sum().sort_values(ascending=False))
-
-data['GDP'] = pd.to_numeric(data['GDP'], errors='coerce')
-data['Urban_Population'] = pd.to_numeric(data['Urban_Population'], errors='coerce')
-
-print(data.columns)
-
-data.to_pickle("clean_data.pkl")
-print("Data saved ✅")
+# ── SAVE ──────────────────────────────────────────────────────────────
+data.to_pickle("final_code/clean_data.pkl")
+print("\nData saved ✅")

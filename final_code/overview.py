@@ -48,7 +48,7 @@ select_region = alt.selection_point(
 select_year = alt.selection_point(
     name="year_overview",            # was "Year" — collided with field name
     fields=['Year'],
-    bind=alt.binding_range(min=1980, max=2016, step=1, name='Year: '),
+    bind=alt.binding_range(min=1980, max=2014, step=1, name='Year: '),
     value=2014
 )
 

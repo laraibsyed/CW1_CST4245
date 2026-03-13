@@ -27,13 +27,12 @@ def cyberpunk_theme():
             'title': {
                 'color': '#FFFFFF',
                 'fontSize': 18,
-                'anchor': 'middle'   # was missing in original
+                'anchor': 'middle' 
             },
             'mark': {'tooltip': True}
         }
     })
 
-# --- SCALES & SELECTIONS ---
 gender_scale = alt.Scale(domain=['Men', 'Women'], range=['#347DC1', '#FFC0CB'])
 
 region_options = [None] + sorted(data['Region'].dropna().unique().tolist())
@@ -54,7 +53,7 @@ select_year = alt.selection_point(
 
 # ── TITLE ─────────────────────────────────────────────────────────────
 # Centred, width=1100, matching regional page exactly
-overview_title = alt.Chart(pd.DataFrame({'t': ["Global Health & Wealth Insights 1980–2016"]})).mark_text(
+overview_title = alt.Chart(pd.DataFrame({'t': ["Global Health & Wealth Insights 1980–2014"]})).mark_text(
     align='center', fontSize=28, fontWeight='bold', color='#00D4FF'
 ).encode(text='t:N').properties(width=1100, height=50)
 

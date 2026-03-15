@@ -39,31 +39,35 @@ region_options = [None] + sorted(data['Region'].dropna().unique().tolist())
 region_labels  = ['All'] + sorted(data['Region'].dropna().unique().tolist())
 
 select_region = alt.selection_point(
-    name="region_overview",          # explicit name avoids collisions
+    name="region_overview", 
     fields=['Region'],
     bind=alt.binding_select(options=region_options, labels=region_labels, name='Region: ')
 )
 
 select_year = alt.selection_point(
-    name="year_overview",            # was "Year" — collided with field name
+    name="year_overview",
     fields=['Year'],
     bind=alt.binding_range(min=1980, max=2014, step=1, name='Year: '),
     value=2014
 )
 
-# ── TITLE ─────────────────────────────────────────────────────────────
-# Centred, width=1100, matching regional page exactly
+# Add this param near your other params at the top
+select_metric = alt.param(
+    name="selected_metric",
+    value="BMI",
+    bind=alt.binding_radio(
+        options=["BMI", "BP", "Diabetes"],
+        labels=["Obesity (BMI)", "High Blood Pressure", "Diabetes"],
+        name="Health Metric: "
+    )
+)
+
 overview_title = alt.Chart(pd.DataFrame({'t': ["Global Health & Wealth Insights 1980–2014"]})).mark_text(
     align='center', fontSize=28, fontWeight='bold', color='#00D4FF'
 ).encode(text='t:N').properties(width=1100, height=50)
 
-# ── KPI ROW ───────────────────────────────────────────────────────────
-# All KPIs: width=210, height=100 — matching regional standard.
-# All use Vega-Lite transforms only; no pandas precomputation.
-
 kpi_base = alt.Chart(data).transform_filter(select_region & select_year)
 
-# KPI 1: Avg Obesity (BMI)
 kpi_bmi = (
     kpi_base
     .mark_text(fontSize=32, fontWeight='bold', color='#FF007F')
@@ -71,7 +75,6 @@ kpi_bmi = (
     .properties(width=210, height=100, title="Avg Obesity %")
 )
 
-# KPI 2: Avg High BP
 kpi_bp = (
     kpi_base
     .mark_text(fontSize=32, fontWeight='bold', color='#FF8C00')
@@ -79,7 +82,6 @@ kpi_bp = (
     .properties(width=210, height=100, title="Avg High BP %")
 )
 
-# KPI 3: Avg Diabetes
 kpi_diabetes = (
     kpi_base
     .mark_text(fontSize=32, fontWeight='bold', color='#9400D3')
@@ -87,21 +89,30 @@ kpi_diabetes = (
     .properties(width=210, height=100, title="Avg Diabetes %")
 )
 
-# KPI 4: Highest BMI Country (reactive to both region + year)
+# Dynamic title expression for the KPI card
+kpi_country_title_expr = (
+    "selected_metric === 'BMI' ? 'Highest Obesity Country' : "
+    "selected_metric === 'BP'  ? 'Highest BP Country' : 'Highest Diabetes Country'"
+)
+
 kpi_risk_country = (
-    kpi_base
-    .transform_aggregate(avg_bmi='mean(BMI)', groupby=['Country'])
+    alt.Chart(data)
+    .add_params(select_metric)
+    .transform_filter(select_region)
+    .transform_filter(select_year)
+    .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Value'])
+    .transform_filter('datum.Metric === selected_metric')        # filter to selected metric
+    .transform_aggregate(avg_val='mean(Value)', groupby=['Country'])
     .transform_window(
         rank='rank()',
-        sort=[alt.SortField('avg_bmi', order='descending')]
+        sort=[alt.SortField('avg_val', order='descending')]
     )
     .transform_filter('datum.rank == 1')
     .mark_text(fontSize=14, fontWeight='bold', color='#FF4500', align='center', dy=5)
     .encode(text='Country:N')
-    .properties(width=210, height=100, title="Highest BMI Country")
+    .properties(width=210, height=100, title="Highest Risk Country")
 )
 
-# KPI 5: Countries Included (distinct count, reactive to both filters)
 kpi_countries = (
     kpi_base
     .mark_text(fontSize=32, fontWeight='bold', color='#00D4FF')
@@ -109,18 +120,10 @@ kpi_countries = (
     .properties(width=210, height=100, title="Countries Included")
 )
 
-# KPI 6: Top Global Risk (Year-on-Year) — fully reactive Vega transform.
-# Strategy: fold all three metrics → aggregate mean per metric for the selected year
-# → window to find which metric has the highest mean → show it with its value.
-# The YoY delta is computed by joining the previous year's aggregated value via
-# a calculate on (year - 1) and a lookup — approximated here as a joinaggregate
-# across the full dataset to get a prior-year comparison using window lag.
-#
-# Simplified reactive version: show the dominant metric name + current avg value
-# for selected year, formatted as "📈 {Metric}: {value}%"
 kpi_trend = (
     alt.Chart(data)
-    .transform_filter(select_year)
+    .transform_filter(select_year)          # ← pass selection object directly, not JS string
+    .transform_filter(select_region)        # ← same here
     .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Prevalence'])
     .transform_aggregate(avg_prev='mean(Prevalence)', groupby=['Metric'])
     .transform_window(
@@ -140,10 +143,6 @@ kpi_row = alt.hconcat(
     kpi_bmi, kpi_bp, kpi_diabetes, kpi_risk_country, kpi_countries, kpi_trend
 ).resolve_scale(color='independent')
 
-# ── ROW 2: GLOBAL SNAPSHOT (BAR) + MULTI-LINE TREND ───────────────────
-# Both charts: width=520, height=320 — matching regional standard.
-
-# Snapshot bar: avg of each metric for selected region + year
 snapshot = (
     alt.Chart(data)
     .transform_filter(select_region)
@@ -179,7 +178,6 @@ snapshot_labels = (
 
 final_snapshot = (snapshot + snapshot_labels).resolve_scale(color='independent')
 
-# Multi-line trend: all three metrics over time, with year tracker rule
 multi_line = (
     alt.Chart(data)
     .transform_filter(select_region)
@@ -202,7 +200,6 @@ multi_line = (
     .properties(width=520, height=320, title="Global Health Risks Over Time")
 )
 
-# Year tracker: dashed vertical rule at selected year
 tracker = (
     alt.Chart(data)
     .mark_rule(color='#00D4FF', strokeWidth=2, strokeDash=[5, 5], opacity=0.8)
@@ -216,48 +213,70 @@ row_2 = alt.hconcat(
     final_snapshot, interactive_multi_line
 ).resolve_scale(color='independent')
 
-# ── ROW 3: TOP 10 COUNTRIES + GENDER DISPARITY ────────────────────────
 
-# Top 10 highest BMI countries for selected region + year
+# Metric colour lookup so the bar colour changes with the selection
+metric_color_expr = (
+    "selected_metric === 'BMI' ? '#FF007F' : "
+    "selected_metric === 'BP'  ? '#FF8C00' : '#9400D3'"
+)
+
+# Axis title changes with selection
+metric_title_expr = (
+    "selected_metric === 'BMI' ? 'Average Obesity (%)' : "
+    "selected_metric === 'BP'  ? 'Average High BP (%)' : 'Average Diabetes (%)'"
+)
+
+# Chart title changes with selection
+chart_title_expr = (
+    "selected_metric === 'BMI' ? 'Top 10 Highest Obesity Countries (Selected Year)' : "
+    "selected_metric === 'BP'  ? 'Top 10 Highest Blood Pressure Countries (Selected Year)' : "
+    "'Top 10 Highest Diabetes Countries (Selected Year)'"
+)
+
 top_10_countries = (
     alt.Chart(data)
+    .add_params(select_metric)
     .transform_filter(select_region)
     .transform_filter(select_year)
-    .transform_aggregate(avg_bmi='mean(BMI)', groupby=['Country'])
+    .transform_fold(['BMI', 'BP', 'Diabetes'], as_=['Metric', 'Value'])
+    .transform_filter('datum.Metric === selected_metric')
+    .transform_aggregate(avg_val='mean(Value)', groupby=['Country'])
     .transform_window(
         rank='rank()',
-        sort=[alt.SortField('avg_bmi', order='descending')]
+        sort=[alt.SortField('avg_val', order='descending')]
     )
     .transform_filter('datum.rank <= 10')
-    .mark_bar(cornerRadiusTopRight=5, cornerRadiusBottomRight=5, color='#FF4500')
+    .mark_bar(cornerRadiusTopRight=5, cornerRadiusBottomRight=5)
     .encode(
-        x=alt.X('avg_bmi:Q', title='Average Obesity (%)',
+        x=alt.X('avg_val:Q',
+                title='Average Prevalence (%)',          # ← fixed neutral title
                 axis=alt.Axis(grid=True)),
         y=alt.Y('Country:N',
-                sort=alt.EncodingSortField(field='avg_bmi', order='descending'),
+                sort=alt.EncodingSortField(field='avg_val', order='descending'),
                 title=None),
+        color=alt.value(alt.expr(metric_color_expr)),
         tooltip=[
-            alt.Tooltip('rank:O', title='Global Rank'),
-            alt.Tooltip('Country:N', title='Country'),
-            alt.Tooltip('avg_bmi:Q', format='.1f', title='Obesity %')
+            alt.Tooltip('rank:O',      title='Global Rank'),
+            alt.Tooltip('Country:N',   title='Country'),
+            alt.Tooltip('Metric:N',    title='Health Metric'),  # ← this tells user which metric
+            alt.Tooltip('avg_val:Q',   format='.1f', title='Avg %')
         ]
     )
-    .properties(
-        width=520, height=320,
-        title="Top 10 Highest Obesity Countries (Selected Year)"
-    )
+    .properties(width=520, height=320, title="Top 10 Countries (Selected Metric & Year)")
 )
 
 top_10_labels = (
     top_10_countries.mark_text(
         align='left', baseline='middle', dx=5,
         color='white', fontWeight='bold', fontSize=12
-    ).encode(text=alt.Text('avg_bmi:Q', format='.1f'))
+    ).encode(
+        text=alt.Text('avg_val:Q', format='.1f'),
+        color=alt.value('white')                   # override bar colour on text
+    )
 )
 
 final_top_10 = top_10_countries + top_10_labels
 
-# Gender disparity: all three metrics side-by-side, Men vs Women
 gender_bars = (
     alt.Chart(data)
     .transform_filter(select_region)
@@ -298,8 +317,6 @@ row_3 = alt.hconcat(
     final_top_10, final_gender_chart
 ).resolve_scale(color='independent')
 
-# ── ASSEMBLY ──────────────────────────────────────────────────────────
-# Matches regional exactly: spacing=50, center=True, configure_view + configure_title
 page_overview = alt.vconcat(
     overview_title,
     kpi_row,
@@ -323,7 +340,6 @@ overview_json = page_overview.to_json()
 print("Page 1 saved ✅")
 
 
-# ── SAVE WITH NAV BAR ─────────────────────────────────────────────────
 def save_dashboard(chart, filename, active_page):
     chart_json = chart.to_json()
 

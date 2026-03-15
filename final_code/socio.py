@@ -69,9 +69,6 @@ socio_title = alt.Chart(pd.DataFrame({'t': ["Socioeconomic Risk Analysis"]})).ma
     align='center', fontSize=28, fontWeight='bold', color='#00D4FF'
 ).encode(text='t:N').properties(width=1100, height=50)
 
-# ── ROW 1: KPI TILES ──────────────────────────────────────────────────
-# All KPIs: width=210, height=100 — matching page standard.
-# All use Vega-Lite transforms; reactive to select_region & select_year.
 
 kpi_base = alt.Chart(data).transform_filter(select_region & select_year)
 
@@ -130,9 +127,6 @@ kpi_urban_majority = (
     .properties(width=210, height=100, title="Countries >50% Urban")
 )
 
-# KPI 5: Dominant Risk Pattern (GDP vs BMI quadrant classification)
-# Computes global mean GDP & BMI via window, classifies each row,
-# then shows the most common category with its colour.
 kpi_risk_pattern = (
     kpi_base
     .transform_window(
@@ -173,11 +167,7 @@ kpi_row = alt.hconcat(
     kpi_gdp, kpi_urban, kpi_gender_risk, kpi_urban_majority, kpi_risk_pattern
 ).resolve_scale(color='independent')
 
-# ── ROW 2: GROUPED BAR + CORRELATION HEATMAP ──────────────────────────
-# Charts: width=520, height=320 — matching page standard.
 
-# Grouped bar: prevalence by income group & gender (all 3 metrics shown via fold)
-# Reactive to select_region & select_year.
 base_bar = (
     alt.Chart(data)
     .transform_filter(select_region & select_year)
@@ -211,10 +201,6 @@ bar_socio = alt.layer(
     )
 ).properties(width=520, height=320, title="Prevalence by Income & Gender")
 
-# Correlation heatmap — intentionally static (global dataset).
-# Vega-Lite cannot compute correlation matrices natively, so this is
-# precomputed once in pandas. It reflects the full dataset's variable
-# relationships, which is a legitimate global reference regardless of filters.
 corr_cols   = ['BMI', 'BP', 'Diabetes', 'GDP', 'Urban_Population']
 corr_matrix = (
     data[corr_cols].corr()
@@ -250,9 +236,7 @@ heatmap = (
 
 row_2 = alt.hconcat(bar_socio, heatmap).resolve_scale(color='independent')
 
-# ── ROW 3: SCATTER + DUAL-AXIS TREND ──────────────────────────────────
 
-# Scatter: GDP vs selected metric, for selected region + year
 scatter = (
     alt.Chart(data)
     .transform_filter(select_region & select_year)
@@ -271,8 +255,6 @@ scatter = (
     .properties(width=520, height=320, title="GDP vs. Prevalence Gradient")
 )
 
-# Dual-axis trend: GDP (green) + selected metric prevalence (red) over all years.
-# Filtered by region but NOT by year — intentional, shows the full time series.
 trend_base = (
     alt.Chart(data)
     .transform_filter(select_region)
@@ -297,9 +279,7 @@ trend_analysis = (
 
 row_3 = alt.hconcat(scatter, trend_analysis).resolve_scale(color='independent')
 
-# ── ASSEMBLY ──────────────────────────────────────────────────────────
-# Matches pages 1 & 3 exactly: spacing=50, center=True,
-# configure_view(stroke=None) + configure_title(anchor='middle').
+
 page_socio = alt.vconcat(
     socio_title,
     kpi_row,

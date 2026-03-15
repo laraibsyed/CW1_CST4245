@@ -5,11 +5,6 @@ import altair as alt
 # Load the cleaned data
 data = pd.read_pickle("final_code/clean_data.pkl")
 
-# ── DATA EXPORT ───────────────────────────────────────────────────────
-# Write data to a named JSON file so Altair references it by URL rather
-# than inlining the entire DataFrame into the chart spec. This prevents
-# the JSON serialisation hang / KeyboardInterrupt on to_json() / to_dict().
-DATA_FILE = "final_code/data_regional.json"
 data.to_json(DATA_FILE, orient="records")
 data_url = alt.UrlData(url=DATA_FILE)
 
@@ -63,9 +58,6 @@ regional_title = alt.Chart(pd.DataFrame({'t': ["Regional Risk Analysis"]})).mark
     align='center', fontSize=28, fontWeight='bold', color='#00D4FF'
 ).encode(text='t:N').properties(width=1100, height=50)
 
-# ── KPI HELPERS ───────────────────────────────────────────────────────
-# ALL KPIs use the live `data` DataFrame with pure Vega-Lite transforms.
-# No pandas precomputation — every KPI reacts to both select_metric & select_year.
 
 def fold_and_filter(include_year=True):
     """
@@ -111,10 +103,6 @@ kpi_lowest = (
     .properties(width=210, height=100, title="Lowest Risk Region")
 )
 
-# ── KPI 3: Fastest Growing Risk ────────────────────────────────────────
-# Uses ALL years (no year filter). Per region: avg prevalence per year →
-# grab earliest value (asc window) and latest value (desc window) →
-# growth = last - first → collapse per region → rank descending.
 kpi_fastest = (
     fold_and_filter(include_year=False)
     .transform_aggregate(
@@ -144,8 +132,7 @@ kpi_fastest = (
     .properties(width=210, height=100, title="Fastest Growing Risk")
 )
 
-# ── KPI 4: Most Stable / Improved ─────────────────────────────────────
-# Same as above but rank by smallest absolute growth.
+
 kpi_improved = (
     fold_and_filter(include_year=False)
     .transform_aggregate(
@@ -176,12 +163,7 @@ kpi_improved = (
     .properties(width=210, height=100, title="Most Stable / Improved")
 )
 
-# ── KPI 5: Biggest Gender Gap ──────────────────────────────────────────
-# Aggregate Men and Women in a single pipeline — no lookup needed.
-# Strategy: filter to Men+Women, fold metric, filter to selected metric+year,
-# aggregate mean per (Region, Gender), then pivot via two windows:
-# one capturing the Men value and one the Women value, compute abs diff,
-# collapse to one row per region, rank descending.
+
 kpi_gender_gap = (
     alt.Chart(data_url)
     .transform_filter(alt.FieldOneOfPredicate(field='Gender', oneOf=['Men', 'Women']))
@@ -365,10 +347,6 @@ page_regional.save('page3_regional.html')
 print("Page 3 saved ✅")
 
 
-# ── SAVE WITH NAV BAR (self-contained HTML) ───────────────────────────
-# We patch the Vega spec to replace the external data URL with the actual
-# JSON records inline, so the HTML works when opened directly from disk
-# without a local web server.
 def save_dashboard(chart, filename, active_page, data_file):
     import json, re
 
